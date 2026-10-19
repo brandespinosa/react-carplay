@@ -188,7 +188,7 @@ You never need to build the app yourself. GitHub does it:
 
 ## 6. The Installer (`pi/install.sh`)
 
-The installer runs five steps, and is safe to run more than once:
+The installer runs six steps, and is safe to run more than once:
 
 1. **Packages:** Python GPIO and I2C tools for the X728, `gpiod` (the `gpioget` / `gpioset` commands), `cage` and `xwayland` (the kiosk), and `fuse` / `libfuse2` (to run AppImages).
 2. **I2C on:** `raspi-config nonint do_i2c 0`.
@@ -201,6 +201,12 @@ The installer runs five steps, and is safe to run more than once:
 5. **Black boot:**
    - Backs up `config.txt` and `cmdline.txt` (`.bak`), then makes the boot changes from section 1.
    - Turns off the desktop and the screen-1 login, and installs the kiosk service.
+6. **X728 clock** (so night dimming knows the time without internet):
+   - It first checks whether the X728's clock chip answers at I2C address 0x68 (`i2cdetect -y 1 0x68 0x68`, showing `68` or `UU`).
+   - If it does, it adds `dtoverlay=i2c-rtc,ds1307` to `config.txt` so Linux uses the chip, and removes `fake-hwclock` (which would otherwise restore the last shutdown time).
+   - It also comments out the "skip when systemd runs" lines in `/lib/udev/hwclock-set`, keeping a `.bak` copy, so the time is read from the chip at boot.
+   - When the clock is active and the time is synced from the internet, it saves that time to the chip (`hwclock -w`).
+   - If the chip doesn't answer, it changes nothing and points to `pi/check_x728_clock.sh`. That script only reads: it checks that I2C is on, that pins GPIO 2/3 are free, scans every I2C bus for 0x36/0x68, and prints what to do.
 
 Finally, it enables both services so they start at every boot.
 
@@ -211,6 +217,7 @@ Finally, it enables both services so they start at every boot.
 | File | What it is |
 |------|-----------|
 | `pi/install.sh` | One-step Pi setup |
+| `pi/check_x728_clock.sh` | Read-only check for the X728 clock: I2C on, pins free, chips found, what to do |
 | `pi/x728_auto_shutdown.py` | Power manager |
 | `pi/x728-power-monitor.service` | Starts the power manager; turns the UPS off at shutdown |
 | `pi/carplay-kiosk.service` | Starts the CarPlay app full screen with cage |

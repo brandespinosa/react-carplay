@@ -66,13 +66,16 @@ cd react-carplay
 bash pi/install.sh
 ```
 
-Enter your password if asked. It takes a few minutes and prints five steps:
+Enter your password if asked. It takes a few minutes and prints six steps:
 
 1. **Installing packages:** the tools for the X728 board, the GPIO pins and the kiosk.
 2. **Enabling I2C:** the X728 board talks to the Pi over I2C.
 3. **Installing the X728 power manager:** copies `x728_auto_shutdown.py` to `~/x728_power_monitor/` and sets it to start at boot.
 4. **Installing the CarPlay app:** gives the app permission to use the dongle, and downloads `Carplay.AppImage` to `~/carplay/`.
 5. **Black screen:** hides the boot logo and text, turns off the desktop, and sets the CarPlay app to start full screen at boot.
+6. **X728 clock:** if the X728's clock chip answers, it turns the clock on so the Pi keeps the right time without internet (needed for night dimming). If it says the clock wasn't found, see **The X728 clock isn't found** in Troubleshooting.
+
+> **First install:** I2C only switches on after a reboot, so step 6 asks you to reboot and run `bash pi/install.sh` once more. That's normal.
 
 ✅ **Success check:** the last line says `Done. Reboot to start everything`.
 
@@ -170,20 +173,16 @@ The sunset time is worked out on the Pi from the city's location and the date, s
 
 > Sunset moves by about 4 minutes for every 50 miles east or west, so the nearest city in the list is close enough.
 
-> **The Pi's clock must be right.** A Raspberry Pi 4 has no clock battery. It gets the time from the internet, and without internet it starts from the time it was last switched off. So after a night parked, it may think it's still evening and dim during the day. Check the time with `date`.
+> **The Pi's clock must be right.** A Raspberry Pi 4 has no clock battery. Without internet it would start from the time it was last switched off, so after a night parked it might think it's still evening and dim during the day.
 >
-> The X728 seems to have its own clock chip, kept running by its batteries. **This hasn't been tested with this project.** To try it:
+> The X728 has its own clock chip, kept running by its batteries. The installer turns it on when it finds it (step 6). To check it's working:
 >
-> 1. Check the chip is there: `sudo i2cdetect -y 1` should show **68**.
-> 2. Add this line to the end of `/boot/firmware/config.txt`:
+> ```bash
+> sudo hwclock -r   # the clock chip's time
+> date              # the Pi's time — both should be right
+> ```
 >
->    ```
->    dtoverlay=i2c-rtc,ds1307
->    ```
->
-> 3. Run `sudo apt remove -y fake-hwclock`, then reboot with internet.
-> 4. Save the correct time to the chip: `sudo hwclock -w`.
-> 5. Check it: `sudo hwclock -r` should show the right time.
+> If the installer said the clock wasn't found, see **The X728 clock isn't found** in Troubleshooting.
 
 ---
 
@@ -241,7 +240,29 @@ Raise `DEBOUNCE_TIME` to `1.0` (see Settings You Can Change above).
 sudo i2cdetect -y 1
 ```
 
-You should see **36** in the grid. If not, check the board is seated properly on the GPIO pins.
+You should see **36** (battery chip) and **68** or **UU** (clock) in the grid. If not, see the next problem.
+
+**The X728 clock isn't found (`i2cdetect` shows only dashes, or no 68)**
+
+1. Run the check script. It changes nothing; it just looks and tells you what to do:
+
+   ```bash
+   cd ~/react-carplay
+   bash pi/check_x728_clock.sh
+   ```
+
+   Read the **What to do** lines at the end.
+
+2. **Only dashes, not even 36:** the Pi can't reach the X728 over I2C at all. The power manager still works, because it uses other pins.
+   1. Power off, unplug, and reseat the X728 firmly on all 40 pins.
+   2. Make sure the 18650 batteries are in and charged.
+   3. If the check script lists a `gpio-shutdown` or `i2c-gpio` line, remove it from `/boot/firmware/config.txt` (`sudo nano /boot/firmware/config.txt`). Those take over the same pins.
+   4. Make sure I2C is on: `sudo raspi-config nonint do_i2c 0`.
+   5. Reboot and run the check script again.
+
+3. **36 shows but 68 doesn't:** the board answers but its clock chip doesn't. Reseat the board; if 68 still doesn't show, contact Geekworm support.
+
+4. **68 shows:** run `bash pi/install.sh` again, reboot with internet connected, then run `sudo hwclock -w` once to save the right time to the chip.
 
 ---
 
