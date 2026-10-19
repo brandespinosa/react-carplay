@@ -154,11 +154,15 @@ Tap the black screen, then tap ⚙️. The app always uses a dark look. Here you
 
 ### Dim the Screen at Night
 
-The screen can dim by 50% from sunset to sunrise. To turn it on:
+The screen can dim from sunset to sunrise. To turn it on:
 
 1. Tap the black screen, then tap ⚙️.
 2. Tap **NIGHT DIM CITY** and pick the city nearest to you. The list has 73 major US cities, with at least one in every state and DC.
-3. Tap **SAVE**. The app restarts.
+3. Tap **NIGHT BRIGHTNESS** and pick how bright the screen should be at night, in steps of 5%:
+   - **100% (no dimming)**: same as daytime.
+   - **50%**: the default.
+   - **5%**: darkest.
+4. Tap **SAVE**. The app restarts.
 
 The sunset time is worked out on the Pi from the city's location and the date, so it needs no internet. It is checked once a minute. To turn dimming off, pick **Off** and tap **SAVE**.
 

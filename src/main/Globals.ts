@@ -16,7 +16,9 @@ export type ExtraConfig = DongleConfig & {
   canConfig?: CanConfig,
   // Location for the sunset dimming; null = dimming off
   latitude: number | null,
-  longitude: number | null
+  longitude: number | null,
+  // Screen brightness at night in % (5-100, steps of 5); 100 = no dimming
+  nightBrightness: number
 }
 
 export interface KeyBindings {

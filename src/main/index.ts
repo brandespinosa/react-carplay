@@ -41,7 +41,8 @@ const EXTRA_CONFIG: ExtraConfig = {
   most: {},
   canConfig: {},
   latitude: null,
-  longitude: null
+  longitude: null,
+  nightBrightness: 50
 }
 
 // comment below line to allow running on non linux devices

@@ -7,8 +7,8 @@ export const isNight = (now: Date, latitude: number, longitude: number) => {
   return now >= sunset || now < sunrise
 }
 
-// Dims the whole screen by 50% from sunset to sunrise; off until a location is set
-export default function NightDim({ latitude, longitude }: { latitude: number | null, longitude: number | null }) {
+// Dims the whole screen to `brightness`% (100 = no change) from sunset to sunrise; off until a location is set
+export default function NightDim({ latitude, longitude, brightness }: { latitude: number | null, longitude: number | null, brightness: number }) {
   const [dim, setDim] = useState(false)
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function NightDim({ latitude, longitude }: { latitude: number | n
     }
   }, [latitude, longitude])
 
-  return dim ? (
-    <div style={{ position: 'fixed', inset: 0, background: '#000', opacity: 0.5, pointerEvents: 'none', zIndex: 2000 }} />
+  return dim && brightness < 100 ? (
+    <div style={{ position: 'fixed', inset: 0, background: '#000', opacity: 1 - brightness / 100, pointerEvents: 'none', zIndex: 2000 }} />
   ) : null
 }

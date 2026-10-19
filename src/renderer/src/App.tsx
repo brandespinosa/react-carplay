@@ -79,7 +79,7 @@ function App() {
 
         >
           <Nav receivingVideo={receivingVideo} settings={settings}/>
-          <NightDim latitude={settings?.latitude ?? null} longitude={settings?.longitude ?? null}/>
+          <NightDim latitude={settings?.latitude ?? null} longitude={settings?.longitude ?? null} brightness={settings?.nightBrightness ?? 50}/>
           {settings ? <Carplay  receivingVideo={receivingVideo} setReceivingVideo={setReceivingVideo} settings={settings} command={keyCommand} commandCounter={commandCounter}/> : null}
           <Routes>
             <Route path={"/"} element={<Home />} />
