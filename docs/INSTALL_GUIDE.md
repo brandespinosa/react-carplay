@@ -155,7 +155,7 @@ sudo systemctl restart x728-power-monitor.service
 
 ### CarPlay App Settings
 
-Tap the black screen, then tap ⚙️. The app always uses a dark look. Here you can set the resolution, frame rate, microphone, camera, key bindings, and the CAN bus and MOST bus options. (**DARK MODE** there is CarPlay's own night look on the phone side; it's separate from the app's dark look.) Saving restarts the app. The [original react-carplay README](UPSTREAM_README.md) explains the CAN bus, MOST bus and key bindings.
+Tap the black screen, then tap ⚙️. The app always uses a dark look, with no mouse pointer or scroll bars (swipe to scroll). Here you can set the resolution, frame rate, microphone, camera, key bindings, and the CAN bus and MOST bus options. (**DARK MODE** there is CarPlay's own night look on the phone side; it's separate from the app's dark look.) Saving restarts the app. The [original react-carplay README](UPSTREAM_README.md) explains the CAN bus, MOST bus and key bindings.
 
 ### Dim the Screen at Night
 

@@ -7,6 +7,15 @@ body {
     padding: 0px;
 }
 
+/* Touch screen in a car: no mouse pointer, and no scroll bars (swiping still scrolls) */
+* {
+    cursor: none !important;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
 .App-logo {
     height: 40vmin;
     pointer-events: none;

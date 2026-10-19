@@ -125,6 +125,7 @@ The app is built with **Electron**: a web page (made with **React**) running in 
 - **CAN bus (optional):** if enabled, `Canbus.ts` listens to the car's CAN bus (its internal network) and tells the screen when reverse is selected, to show a camera.
 - **The window:** `createWindow()` opens a full-screen, frameless window (`kiosk: true`) with a **black background** (`backgroundColor: '#000000'`), so nothing white shows while it loads.
 - **Always dark:** `nativeTheme.themeSource = 'dark'` makes the whole app use its dark look: the menu, the "Searching" screen and the settings pages. `App.css` makes the dark background pure black.
+- **No pointer, no scroll bars:** `App.css` hides the mouse pointer (`cursor: none`) and all scroll bars (`::-webkit-scrollbar`), since it's a touch screen. Swiping still scrolls pages like Settings.
 
 ### Renderer: the screens
 
