@@ -1,109 +1,87 @@
-# React-Carplay
+# RiAct CarPlay
 
-<a href="https://www.buymeacoffee.com/rhysm" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+**A Raspberry Pi car head unit: wireless Apple CarPlay with safe, automatic power on and off.**
 
-This is a react based carplay application, that utilised the Carlinkit [dongle](https://forums.moderndaymods.com/t/carplay-adapter/161) (cpc200-ccpa or cpc200-ccpm)  to provide raspberry pi (and others) compatible
-carplay application.
+Everything for the project lives in this one repository:
 
-## Features
+- **The CarPlay app.** A copy of [react-carplay](https://github.com/rhysmorgan134/react-carplay) changed so the screen stays black until CarPlay opens.
+- **The power manager.** A small Python program for the Geekworm X728 UPS (battery backup board). It shuts the Pi down safely when the car is turned off.
+- **One install script** that sets up the whole Pi.
+- **The guides:** how to install it, and how all the code works.
 
- - Carplay fully configurable upto 60fps @ 1080p (hardware capability dependent)
- - Canbus integration to allow showing a camera when a canbus signal is received
- - PiMost integration to allow streaming Pi Audio over mostbus
- - Configurable key bindings
- - Ability to choose microphone device and camera device
+> I am not a coder. This project was built with the help of Claude (claude.ai). It is shared so other hobbyists can use and change it. It is not maintained. Good luck! — B.
 
-## Installation
-The easiest method is to install via the setup-pi script, this handles usb permissions and also creates and autostart script
-to launch the app on start up.
+## What it does
 
-`git clone https://github.com/rhysmorgan134/react-carplay.git`
+| When | What happens |
+|------|--------------|
+| Car turned on | The X728 powers the Pi on. The screen stays **black** (no logos, no boot text, no desktop, no white "Searching…" screens) until your phone connects, then **CarPlay** appears. |
+| Engine starting (short power dip) | Ignored. If power is back within 5 seconds, nothing happens. |
+| Car turned off | After 5 seconds the Pi shuts down cleanly, then the X728 turns itself off to save the battery. |
+| Car turned off while the Pi is still booting | The Pi shuts down 5 seconds after the power manager starts, instead of draining the battery. |
+| `sudo reboot` with power on | A normal reboot. The UPS stays on. |
 
-`cd react-carplay`
+## What you need
 
-`./setup-pi.sh`
+- Raspberry Pi 4 Model B with **Raspberry Pi OS (64-bit, Bookworm)**
+- Geekworm **X728** UPS board (V2.5 tested), with 18650 batteries, the **AUTO ON** and **CHG EN** jumpers fitted
+- Carlinkit **CPC200-CCPA** (wireless and wired) or **CPC200-CCPW** (wired only) CarPlay dongle
+- A screen (touch screen recommended)
+- An iPhone
 
-## Manual installation
+## Quick start
 
-Download the latest app image from the link below, choose 64bit or armv7l for 32bit
+On the Pi, with internet:
 
-`https://github.com/rhysmorgan134/react-carplay/releases`
+```bash
+git clone https://github.com/brandespinosa/react-carplay.git
+cd react-carplay
+bash pi/install.sh
+sudo reboot
+```
 
-Create the required udev rules
+That's it. For step-by-step instructions with checks after each step, see the **[Installation Guide](docs/INSTALL_GUIDE.md)** (also as a [PDF](docs/Installation%20Guide.pdf)).
 
-`FILE=/etc/udev/rules.d/52-nodecarplay.rules`
-`echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1314\", ATTR{idProduct}==\"152*\", MODE=\"0660\", GROUP=\"plugdev\"" | sudo tee $FILE`
+**Using it:**
 
-Make the app image executable - navigate to the downloaded file eg:
+- **Tap the black screen** to show the app menu (settings, info, quit) for 10 seconds.
+- Power manager log: `tail -f ~/x728_power_monitor/x728_shutdown.log`
+- CarPlay app log: `journalctl -u carplay-kiosk -f`
 
-`cd /home/pi/Downloads`
+## Documentation
 
-Then run the below command, replacing the file name with the one downloaded
+| Document | What's in it |
+|----------|--------------|
+| [Installation Guide](docs/INSTALL_GUIDE.md) | Hardware setup, install, tests, troubleshooting, useful commands, how to get the desktop back |
+| [How It Works](docs/HOW_IT_WORKS.md) | Plain-English walkthrough of all the code: boot, power manager, services, the CarPlay app, the build |
+| [Original react-carplay README](docs/UPSTREAM_README.md) | App features: CAN bus reverse camera, MOST bus audio, key bindings |
 
-`chmod +x react-carplay-4.0.0-arm64.AppImage`
-
-Then run the AppImage
-
-`./react-carplay-4.0.0-arm64.AppImage`
-
-## Canbus configuration
-
-The application supports canbus messages when a compatible socketcan interface is present, it will default to can0 (for now).
-The first requirement is to know the required can message that you want to trigger the camera. As an example in a freelander 2
-the parking sensors when active set a bit to true and set it to false when inactive, this is an ideal trigger. You need
-3 values to enter it successfully. If we take the below can message
-
-`188#13400000FF0000FF`
-
-This message is made up of multiple parts, first is the can ID
-
-`0x188`
-
-Then there are 8 bytes
-
-`0x13 0x40 0x00 0x00 0xFF 0x00 0x00 0xFF`
-
-If we write these out as binary representations they would look like the below
+## What's in this repository
 
 ```
-binary - 00010011  01000000  00000000  00000000  11111111  00000000  00000000  11111111
-hex -      0x13      0x40      0x00      0x00      0xFF      0x00      0x00      0xFF
+pi/                          Raspberry Pi setup (this project)
+  install.sh                 One-step setup script
+  x728_auto_shutdown.py      Power manager for the X728 UPS
+  x728-power-monitor.service Runs the power manager; powers off the UPS on shutdown
+  carplay-kiosk.service      Runs the CarPlay app full screen on a black screen
+  LICENSE                    MIT licence for the files in pi/
+src/                         The CarPlay app (Electron + React), from react-carplay
+  main/                      Background part: window, settings file, CAN bus
+  preload/                   Bridge between the background part and the screen
+  renderer/                  What you see: React screens, video and audio workers
+docs/                        Guides
+.github/workflows/           Automatic build of the Pi app (Carplay-arm64.AppImage)
+.claude/skills/              Claude Code helper skills (ponytail)
 ```
-When I toggle the parking sensors on and off, byte 1 switches between 0x40 and 0x00, this is because byte 1 bit 6 represents
-the sensors. This byte could be showing 0x41 in the on state, and 0x01 in the off state, but bit 6 is still the bit that toggles
-(bits start at 0)
 
-So now we know the three values needed to be entered into react-carplay
+## Building the app
 
- - canID = 0x188 hex = 392 decimal
- - mask = 0x40 hex = 64 decimal
- - byte = 1
+You don't need to build anything: `pi/install.sh` downloads the ready-made app from this repository's [latest release](https://github.com/brandespinosa/react-carplay/releases/latest).
 
-In the settings page, click the canbus option, a pop up then appears and fill out the boxes with numbers found for your car
-(these will be different, unless you also have a freelander 2)
+Every change pushed to `main` is built automatically by GitHub Actions (`.github/workflows/build-pi.yml`) and published as a new release. To build it yourself on an arm64 Linux machine (such as a Pi 4): `npm ci`, then `npx electron-vite build && npx electron-builder --linux AppImage --arm64`.
 
-## MOST bus PiMost integration
+## Credits and licences
 
-The MOST bus is a multimedia network, to find out more around how it works, take a look here https://moderndaymods.com/how-most-bus-works/
-
-React-Carplay has the capability to disconnect the cars amplifier from it's current source and connect it to the pi instead
-which then streams the carplay audio directly onto the MOST bus network. To do this, tick the box for PiMost on the settings page,
-then enter the fBlockID (typically 0x22 for an amplifier) then the instance ID, the sink ID, the finally the address high and low
-for the amplifier.
-
-## Keybindings
-
-To configure key bindings, click the Bindings button in settings, then choose the function you need by clicking, then press
-the desired key.
-
-## Thanks
-
-React-carplay uses node-carplay for interfacing to the dongle, recently there has been amazing contributions from both
-@gozmanyoni and @steelbrain without their help alot of the carplay improvements would not of been possible
-
-gozmanyoni coffee link if you wish to show appreciation - https://www.buymeacoffee.com/ygoz
-
-<!-- CONTACT -->
-## Contact
-
-https://forums.moderndaymods.com/
+- The CarPlay app is [react-carplay](https://github.com/rhysmorgan134/react-carplay) by Rhys Morgan. It uses [node-carplay](https://github.com/rhysmorgan134/node-CarPlay) to talk to the dongle. The original project has no licence file, so its code remains © its authors.
+- The files in `pi/` are © brandespinosa, under the MIT licence (`pi/LICENSE`).
+- The UPS power-off method follows Geekworm's official X728 scripts.

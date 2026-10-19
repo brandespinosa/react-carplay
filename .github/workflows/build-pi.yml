@@ -1,9 +1,11 @@
-# Builds the Raspberry Pi (arm64) AppImage and publishes it as the latest release.
+# Builds the Raspberry Pi (arm64) AppImage. On pushes to main it is also published as the latest release;
+# pull requests only build it, to check it still works.
 name: Build Pi AppImage
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -26,7 +28,8 @@ jobs:
         with:
           name: Carplay-arm64.AppImage
           path: Carplay-arm64.AppImage
-      - uses: softprops/action-gh-release@v2
+      - if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v4.0.5-black.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
