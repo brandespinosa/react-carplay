@@ -7,6 +7,7 @@ import Home from "./components/Home";
 import Nav from "./components/Nav";
 import Carplay from './components/Carplay'
 import Camera from './components/Camera'
+import NightDim from './components/NightDim'
 import { Box, Modal } from '@mui/material'
 import { useCarplayStore, useStatusStore } from "./store/store";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -78,6 +79,7 @@ function App() {
 
         >
           <Nav receivingVideo={receivingVideo} settings={settings}/>
+          <NightDim latitude={settings?.latitude ?? null} longitude={settings?.longitude ?? null}/>
           {settings ? <Carplay  receivingVideo={receivingVideo} setReceivingVideo={setReceivingVideo} settings={settings} command={keyCommand} commandCounter={commandCounter}/> : null}
           <Routes>
             <Route path={"/"} element={<Home />} />

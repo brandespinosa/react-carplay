@@ -82,6 +82,15 @@ function Settings({ settings }: SettingsProps) {
     phoneWorkMode: () => <Grid key={'phoneWorkMode'} xs={4}><TextField label={'PHONE WORK MODE'} type={"Number"} value={activeSettings.phoneWorkMode} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
       settingsChange('phoneWorkMode', parseInt(event.target.value))
                 }}/></Grid>,
+    // Location for dimming the screen 50% after sunset; leave empty to turn it off
+    latitude: () => <Grid key={'latitude'} xs={4}><TextField label={'LATITUDE (NIGHT DIM)'} type={"Number"} value={activeSettings.latitude ?? ''} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = parseFloat(event.target.value)
+      settingsChange('latitude', Number.isFinite(value) ? value : null)
+    }}/></Grid>,
+    longitude: () => <Grid key={'longitude'} xs={4}><TextField label={'LONGITUDE (NIGHT DIM)'} type={"Number"} value={activeSettings.longitude ?? ''} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = parseFloat(event.target.value)
+      settingsChange('longitude', Number.isFinite(value) ? value : null)
+    }}/></Grid>,
     kiosk: () => {
       return (
         <Grid key={'kiosk'} xs={4}>

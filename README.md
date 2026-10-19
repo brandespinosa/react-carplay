@@ -18,6 +18,7 @@ Everything for the project lives in this one repository:
 | Car turned on | The X728 powers the Pi on. The screen stays **black** (no logos, no boot text, no desktop, no white "Searching…" screens) until your phone connects, then **CarPlay** appears. |
 | Engine starting (short power dip) | Ignored. If power is back within 5 seconds, nothing happens. |
 | Car turned off | After 5 seconds the Pi shuts down cleanly, then the X728 turns itself off to save the battery. |
+| After sunset | The screen dims by 50% until sunrise (once you enter your location in the app's settings). |
 | Car turned off while the Pi is still booting | The Pi shuts down 5 seconds after the power manager starts, instead of draining the battery. |
 | `sudo reboot` with power on | A normal reboot. The UPS stays on. |
 

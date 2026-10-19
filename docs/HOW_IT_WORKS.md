@@ -137,6 +137,11 @@ The app is built with **Electron**: a web page (made with **React**) running in 
   - Sends your touches to the phone (`useCarplayTouch.ts`).
   - The video area has a black background, so it's black until the first video frame arrives.
 - `components/Settings.tsx`, `KeyBindings.tsx`, `Canbus.tsx`, `Camera.tsx`: the settings pages.
+- `components/NightDim.tsx`: **night dimming.**
+  - If a latitude and longitude are set in the settings, it checks once a minute whether it's between sunset and sunrise (`isNight()`).
+  - The **suncalc** library works out the sunset and sunrise times from the location and date, with no internet needed.
+  - At night it lays a 50% see-through black layer over everything, including CarPlay. Touches pass straight through it (`pointerEvents: 'none'`).
+  - The location is stored as `latitude` / `longitude` in the settings file. Empty (`null`) means dimming is off.
 - `store/store.ts`: shared memory for the screens. `useStatusStore` holds `isPlugged` and `reverse`. `useCarplayStore` holds the settings.
 
 ### Workers: the heavy lifting
@@ -211,6 +216,7 @@ Finally, it enables both services so they start at every boot.
 | `src/renderer/index.html` | The page, with the black cover |
 | `src/renderer/src/App.tsx` | Top-level screen layout |
 | `src/renderer/src/components/Nav.tsx` | Menu bar and black cover with tap-to-show |
+| `src/renderer/src/components/NightDim.tsx` | Dims the screen 50% from sunset to sunrise |
 | `src/renderer/src/components/Carplay.tsx` | CarPlay view: workers, plugged/unplugged, touch |
 | `src/renderer/src/components/worker/CarPlay.worker.ts` | Talks to the dongle |
 | `src/renderer/src/components/worker/render/Render.worker.ts` | Decodes and draws the video |
