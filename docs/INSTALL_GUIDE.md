@@ -151,6 +151,32 @@ sudo systemctl restart x728-power-monitor.service
 
 Tap the black screen, then tap ⚙️. Here you can set the resolution, frame rate, microphone, camera, key bindings, and the CAN bus and MOST bus options. Saving restarts the app. The [original react-carplay README](UPSTREAM_README.md) explains the CAN bus, MOST bus and key bindings.
 
+### Dim the Screen at Night
+
+The screen can dim by 50% from sunset to sunrise. To turn it on:
+
+1. Look up your location's latitude and longitude, for example by long-pressing your home on Google Maps. Los Angeles is about `34.05` and `-118.24`.
+2. Tap the black screen, then tap ⚙️.
+3. Enter the numbers in **LATITUDE (NIGHT DIM)** and **LONGITUDE (NIGHT DIM)**. Use a minus sign for south and west.
+4. Tap **SAVE**. The app restarts.
+
+The sunset time is worked out on the Pi from your location and the date, so it needs no internet. It is checked once a minute. To turn dimming off, clear both fields and tap **SAVE**.
+
+> **The Pi's clock must be right.** A Raspberry Pi 4 has no clock battery. It gets the time from the internet, and without internet it starts from the time it was last switched off. So after a night parked, it may think it's still evening and dim during the day. Check the time with `date`.
+>
+> The X728 seems to have its own clock chip, kept running by its batteries. **This hasn't been tested with this project.** To try it:
+>
+> 1. Check the chip is there: `sudo i2cdetect -y 1` should show **68**.
+> 2. Add this line to the end of `/boot/firmware/config.txt`:
+>
+>    ```
+>    dtoverlay=i2c-rtc,ds1307
+>    ```
+>
+> 3. Run `sudo apt remove -y fake-hwclock`, then reboot with internet.
+> 4. Save the correct time to the chip: `sudo hwclock -w`.
+> 5. Check it: `sudo hwclock -r` should show the right time.
+
 ---
 
 ## 🔧 Troubleshooting

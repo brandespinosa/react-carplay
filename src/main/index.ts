@@ -39,7 +39,9 @@ const EXTRA_CONFIG: ExtraConfig = {
   canbus: false,
   bindings: DEFAULT_BINDINGS,
   most: {},
-  canConfig: {}
+  canConfig: {},
+  latitude: null,
+  longitude: null
 }
 
 // comment below line to allow running on non linux devices

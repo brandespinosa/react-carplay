@@ -13,7 +13,10 @@ export type ExtraConfig = DongleConfig & {
   canbus: boolean,
   bindings: KeyBindings,
   most?: Most,
-  canConfig?: CanConfig
+  canConfig?: CanConfig,
+  // Location for the sunset dimming; null = dimming off
+  latitude: number | null,
+  longitude: number | null
 }
 
 export interface KeyBindings {
