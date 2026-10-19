@@ -83,7 +83,7 @@ function Settings({ settings }: SettingsProps) {
     phoneWorkMode: () => <Grid key={'phoneWorkMode'} xs={4}><TextField label={'PHONE WORK MODE'} type={"Number"} value={activeSettings.phoneWorkMode} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
       settingsChange('phoneWorkMode', parseInt(event.target.value))
                 }}/></Grid>,
-    // City for dimming the screen 50% after sunset; it sets latitude and longitude ("Off" clears them)
+    // City for dimming the screen after sunset; it sets latitude and longitude ("Off" clears them)
     latitude: () => {
       const city = US_CITIES.find(c => c.lat === activeSettings.latitude && c.lon === activeSettings.longitude)
       return (
@@ -108,6 +108,24 @@ function Settings({ settings }: SettingsProps) {
         </Grid>
       )
     },
+    // Screen brightness after sunset: 100% (no dimming) down to 5%, in steps of 5
+    nightBrightness: () => (
+      <Grid key={'nightBrightness'} xs={4}>
+        <FormControl fullWidth>
+          <InputLabel id={'nightBrightnessLabel'}>NIGHT BRIGHTNESS</InputLabel>
+          <Select
+            labelId={'nightBrightnessLabel'}
+            label={'NIGHT BRIGHTNESS'}
+            value={activeSettings.nightBrightness ?? 50}
+            MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
+            onChange={(event) => settingsChange('nightBrightness', Number(event.target.value))}
+          >
+            {Array.from({ length: 20 }, (_, i) => 100 - i * 5).map(p =>
+              <MenuItem key={p} value={p}>{p === 100 ? '100% (no dimming)' : `${p}%`}</MenuItem>)}
+          </Select>
+        </FormControl>
+      </Grid>
+    ),
     kiosk: () => {
       return (
         <Grid key={'kiosk'} xs={4}>

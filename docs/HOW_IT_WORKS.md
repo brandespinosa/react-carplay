@@ -145,7 +145,8 @@ The app is built with **Electron**: a web page (made with **React**) running in 
 - `components/NightDim.tsx`: **night dimming.**
   - If a city is picked in the settings, it checks once a minute whether it's between sunset and sunrise (`isNight()`).
   - The **suncalc** library works out the sunset and sunrise times from the location and date, with no internet needed.
-  - At night it lays a 50% see-through black layer over everything, including CarPlay. Touches pass straight through it (`pointerEvents: 'none'`).
+  - At night it lays a see-through black layer over everything, including CarPlay. Touches pass straight through it (`pointerEvents: 'none'`).
+  - How dark the layer is comes from the **NIGHT BRIGHTNESS** setting (`nightBrightness`: 5 to 100 in steps of 5, default 50). The layer's opacity is `1 − nightBrightness / 100`, so 50% brightness = half-dark, 5% = almost black, and 100% = no layer at all.
   - The **NIGHT DIM CITY** list is in `components/usCities.ts` (name, latitude, longitude). Picking a city saves its `latitude` / `longitude` in the settings file. **Off** saves `null`, which means dimming is off.
 - `store/store.ts`: shared memory for the screens. `useStatusStore` holds `isPlugged` and `reverse`. `useCarplayStore` holds the settings.
 
@@ -221,7 +222,7 @@ Finally, it enables both services so they start at every boot.
 | `src/renderer/index.html` | The page, with the black cover |
 | `src/renderer/src/App.tsx` | Top-level screen layout |
 | `src/renderer/src/components/Nav.tsx` | Menu bar and black cover with tap-to-show |
-| `src/renderer/src/components/NightDim.tsx` | Dims the screen 50% from sunset to sunrise |
+| `src/renderer/src/components/NightDim.tsx` | Dims the screen to the chosen night brightness from sunset to sunrise |
 | `src/renderer/src/components/usCities.ts` | The list of US cities for night dimming |
 | `src/renderer/src/components/LoadingCar.tsx` | Dancing car shown while waiting for the phone |
 | `src/renderer/src/components/Carplay.tsx` | CarPlay view: workers, plugged/unplugged, touch |
