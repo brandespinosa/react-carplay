@@ -124,12 +124,17 @@ The app is built with **Electron**: a web page (made with **React**) running in 
 - **Settings server:** `Socket.ts` runs a small local server on port 4000. The screen uses it to read and save settings. Saving restarts the app (`saveSettings` → `app.relaunch()`).
 - **CAN bus (optional):** if enabled, `Canbus.ts` listens to the car's CAN bus (its internal network) and tells the screen when reverse is selected, to show a camera.
 - **The window:** `createWindow()` opens a full-screen, frameless window (`kiosk: true`) with a **black background** (`backgroundColor: '#000000'`), so nothing white shows while it loads.
+- **Always dark:** `nativeTheme.themeSource = 'dark'` makes the whole app use its dark look: the menu, the "Searching" screen and the settings pages. `App.css` makes the dark background pure black.
 
 ### Renderer: the screens
 
 - `src/renderer/index.html`: the page. It starts with a **black cover** inside `#root`, so the screen is black even before React has drawn anything.
 - `App.tsx`: the top level. It shows the menu (`Nav`), the CarPlay view (`Carplay`) and the pages (Settings, Info, Camera).
 - `components/Nav.tsx`: the menu bar. **Black-screen change:** while you're on the CarPlay page and no phone is connected (`!isPlugged`), it covers the whole screen in black. Tapping it calls `revealMenu()`, which shows the menu for 10 seconds.
+- `components/LoadingCar.tsx`: the **dancing car** shown in the middle of that black cover.
+  - A drawn (SVG) car on a green tile that bobs and sways, with spinning wheels and floating music notes.
+  - It uses only CSS animations of movement and fading, which the Pi's graphics chip handles easily.
+  - Touches pass through it to the black cover.
 - `components/Carplay.tsx`: the CarPlay view.
   - Starts the two workers below.
   - Watches for the dongle being plugged or unplugged (`navigator.usb.onconnect` / `ondisconnect`).
@@ -138,10 +143,10 @@ The app is built with **Electron**: a web page (made with **React**) running in 
   - The video area has a black background, so it's black until the first video frame arrives.
 - `components/Settings.tsx`, `KeyBindings.tsx`, `Canbus.tsx`, `Camera.tsx`: the settings pages.
 - `components/NightDim.tsx`: **night dimming.**
-  - If a latitude and longitude are set in the settings, it checks once a minute whether it's between sunset and sunrise (`isNight()`).
+  - If a city is picked in the settings, it checks once a minute whether it's between sunset and sunrise (`isNight()`).
   - The **suncalc** library works out the sunset and sunrise times from the location and date, with no internet needed.
   - At night it lays a 50% see-through black layer over everything, including CarPlay. Touches pass straight through it (`pointerEvents: 'none'`).
-  - The location is stored as `latitude` / `longitude` in the settings file. Empty (`null`) means dimming is off.
+  - The **NIGHT DIM CITY** list is in `components/usCities.ts` (name, latitude, longitude). Picking a city saves its `latitude` / `longitude` in the settings file. **Off** saves `null`, which means dimming is off.
 - `store/store.ts`: shared memory for the screens. `useStatusStore` holds `isPlugged` and `reverse`. `useCarplayStore` holds the settings.
 
 ### Workers: the heavy lifting
@@ -217,6 +222,8 @@ Finally, it enables both services so they start at every boot.
 | `src/renderer/src/App.tsx` | Top-level screen layout |
 | `src/renderer/src/components/Nav.tsx` | Menu bar and black cover with tap-to-show |
 | `src/renderer/src/components/NightDim.tsx` | Dims the screen 50% from sunset to sunrise |
+| `src/renderer/src/components/usCities.ts` | The list of US cities for night dimming |
+| `src/renderer/src/components/LoadingCar.tsx` | Dancing car shown while waiting for the phone |
 | `src/renderer/src/components/Carplay.tsx` | CarPlay view: workers, plugged/unplugged, touch |
 | `src/renderer/src/components/worker/CarPlay.worker.ts` | Talks to the dongle |
 | `src/renderer/src/components/worker/render/Render.worker.ts` | Decodes and draws the video |

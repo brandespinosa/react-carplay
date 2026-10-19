@@ -8,6 +8,7 @@ import CameraIcon from '@mui/icons-material/Camera';
 import { Link, useLocation } from "react-router-dom";
 import ExitToApp from '@mui/icons-material/ExitToApp';
 import { useStatusStore } from "../store/store";
+import LoadingCar from "./LoadingCar";
 
 export default function Nav({ receivingVideo, settings }) {
   const [value, setValue] = React.useState(0);
@@ -34,7 +35,9 @@ export default function Nav({ receivingVideo, settings }) {
   return (
     <>
     {pathname === '/' && !isPlugged && !showMenu && (
-      <div onClick={revealMenu} style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 1200 }} />
+      <div onClick={revealMenu} style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 1200 }}>
+        <LoadingCar />
+      </div>
     )}
     <Tabs value={value} onChange={handleChange} aria-label="icon label tabs example" centered sx={pathname === '/' && isPlugged ? {minHeight: '0px', height: '0px'} : {}}>
       <Tab icon={<PhoneIcon />} to={'/'} component={Link}/>
