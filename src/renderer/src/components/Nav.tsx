@@ -21,7 +21,21 @@ export default function Nav({ receivingVideo, settings }) {
     window.api.quit()
   }
 
+  // Keep the screen black until the phone connects; a tap shows the menu for 10s
+  const [showMenu, setShowMenu] = React.useState(false)
+  const menuTimer = React.useRef<ReturnType<typeof setTimeout>>()
+  const revealMenu = () => {
+    clearTimeout(menuTimer.current)
+    setShowMenu(true)
+    menuTimer.current = setTimeout(() => setShowMenu(false), 10000)
+  }
+  React.useEffect(() => () => clearTimeout(menuTimer.current), [])
+
   return (
+    <>
+    {pathname === '/' && !isPlugged && !showMenu && (
+      <div onClick={revealMenu} style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 1200 }} />
+    )}
     <Tabs value={value} onChange={handleChange} aria-label="icon label tabs example" centered sx={pathname === '/' && isPlugged ? {minHeight: '0px', height: '0px'} : {}}>
       <Tab icon={<PhoneIcon />} to={'/'} component={Link}/>
       <Tab icon={<SettingsIcon />} to={'/settings'}  component={Link}/>
@@ -29,5 +43,6 @@ export default function Nav({ receivingVideo, settings }) {
       {settings?.camera !== '' ? <Tab icon={<CameraIcon />} to={'/camera'} component={Link}/> : null}
       <Tab icon={<ExitToApp />} onClick={() => quit()} />
     </Tabs>
+    </>
   );
 }
