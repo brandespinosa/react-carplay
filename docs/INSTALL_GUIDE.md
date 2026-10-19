@@ -5,7 +5,7 @@
 This guide turns a Raspberry Pi 4 into a car head unit:
 
 - ✅ **CarPlay** on the screen as soon as your phone connects.
-- ✅ **Black screen** from power-on until CarPlay opens: no logos, boot text, desktop or white "Searching…" screens.
+- ✅ **Black screen** from power-on: no logos, boot text, desktop or white "Searching…" screens. While the app waits for your phone, a little dancing car shows on the black screen.
 - ✅ **Safe shutdown:** 5 seconds after the car is turned off, the Pi shuts down cleanly, then the X728 UPS turns itself off to save its battery.
 - ✅ **Short dips are ignored:** if power comes back within 5 seconds (for example while the engine starts), nothing happens.
 - ✅ **Auto power-on:** when the car is turned on, the Pi starts again.
@@ -87,7 +87,8 @@ sudo reboot
 **What you should see:**
 
 1. The screen stays black while the Pi starts.
-2. When your iPhone connects to the dongle, CarPlay appears.
+2. When the CarPlay app is ready, a little dancing car appears while it waits for your phone.
+3. When your iPhone connects to the dongle, CarPlay appears.
 
 > **First connection:** pair your iPhone with the dongle the first time. Wireless dongles show up in the iPhone's CarPlay settings (Settings → General → CarPlay). For a wired dongle, plug the phone into the dongle with a cable.
 
@@ -155,12 +156,13 @@ Tap the black screen, then tap ⚙️. Here you can set the resolution, frame ra
 
 The screen can dim by 50% from sunset to sunrise. To turn it on:
 
-1. Look up your location's latitude and longitude, for example by long-pressing your home on Google Maps. Los Angeles is about `34.05` and `-118.24`.
-2. Tap the black screen, then tap ⚙️.
-3. Enter the numbers in **LATITUDE (NIGHT DIM)** and **LONGITUDE (NIGHT DIM)**. Use a minus sign for south and west.
-4. Tap **SAVE**. The app restarts.
+1. Tap the black screen, then tap ⚙️.
+2. Tap **NIGHT DIM CITY** and pick the city nearest to you. The list has 73 major US cities, with at least one in every state and DC.
+3. Tap **SAVE**. The app restarts.
 
-The sunset time is worked out on the Pi from your location and the date, so it needs no internet. It is checked once a minute. To turn dimming off, clear both fields and tap **SAVE**.
+The sunset time is worked out on the Pi from the city's location and the date, so it needs no internet. It is checked once a minute. To turn dimming off, pick **Off** and tap **SAVE**.
+
+> Sunset moves by about 4 minutes for every 50 miles east or west, so the nearest city in the list is close enough.
 
 > **The Pi's clock must be right.** A Raspberry Pi 4 has no clock battery. It gets the time from the internet, and without internet it starts from the time it was last switched off. So after a night parked, it may think it's still evening and dim during the day. Check the time with `date`.
 >
@@ -181,7 +183,7 @@ The sunset time is worked out on the Pi from your location and the date, so it n
 
 ## 🔧 Troubleshooting
 
-**The screen stays black and CarPlay never appears**
+**CarPlay never appears (black screen, or the dancing car keeps dancing)**
 
 1. Tap the screen. If the menu appears, the app is running but no phone is connected. Check the dongle is plugged in and your phone is paired.
 2. If nothing appears, check the app's log:
