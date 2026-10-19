@@ -95,6 +95,7 @@ function createWindow(): void {
     height: config!.height,
     kiosk: config!.kiosk,
     show: false,
+    backgroundColor: '#000000',
     frame: false,
     autoHideMenuBar: true,
     webPreferences: {

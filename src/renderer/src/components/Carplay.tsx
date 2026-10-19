@@ -270,6 +270,7 @@ function Carplay({ receivingVideo, setReceivingVideo, settings, command, command
           padding: 0,
           margin: 0,
           display: 'flex',
+          backgroundColor: '#000',
           visibility: isPlugged ? 'visible' : 'hidden'
         }}
       >

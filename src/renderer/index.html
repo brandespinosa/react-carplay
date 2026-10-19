@@ -9,7 +9,8 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <!-- Black until React renders (it replaces the contents of #root) -->
+    <div id="root"><div style="position: fixed; inset: 0; background: #000"></div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

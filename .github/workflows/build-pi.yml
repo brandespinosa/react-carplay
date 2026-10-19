@@ -1,0 +1,34 @@
+# Builds the Raspberry Pi (arm64) AppImage and publishes it as the latest release.
+name: Build Pi AppImage
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+      - run: sudo apt-get update && sudo apt-get install -y libudev-dev
+      - run: npm ci
+      - run: npx electron-vite build && npx electron-builder --linux AppImage --arm64 --publish never
+      - run: mv dist/*-arm64.AppImage Carplay-arm64.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Carplay-arm64.AppImage
+          path: Carplay-arm64.AppImage
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v4.0.5-black.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: Carplay-arm64.AppImage
