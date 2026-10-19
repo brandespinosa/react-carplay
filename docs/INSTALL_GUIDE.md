@@ -60,6 +60,8 @@ cd react-carplay
 
 ## 🚀 Step 3: Run the Installer
 
+> **Used an older version before?** If this Pi ever had the original react-carplay app, an earlier RiAct-Carplay version, or Geekworm's own X728 scripts, do the **🧹 Removing Old Versions** section (near the end of this guide) first.
+
 ```bash
 bash pi/install.sh
 ```
@@ -243,6 +245,96 @@ You should see **36** in the grid. If not, check the board is seated properly on
 
 ---
 
+## 🧹 Removing Old Versions
+
+Older CarPlay or X728 software left on the Pi can fight with this program. You might get two CarPlay apps grabbing the dongle, or two programs switching the UPS on and off. Do these checks once, before running the installer (or any time something behaves strangely).
+
+### A. The original react-carplay app
+
+If you ever installed Rhys Morgan's react-carplay with its `setup-pi.sh` script, it put the app on your Desktop and set it to start with the desktop. Remove both:
+
+```bash
+sudo rm -f /etc/xdg/autostart/carplay.desktop
+rm -f ~/Desktop/Carplay.AppImage
+rm -f ~/Downloads/react-carplay-*.AppImage
+```
+
+✅ **Check:** this should print nothing:
+
+```bash
+ls /etc/xdg/autostart | grep -i carplay
+```
+
+> The dongle permission file it created (`/etc/udev/rules.d/52-nodecarplay.rules`) is the same one this installer writes, so leave it.
+
+### B. Earlier versions of this project (RiAct-Carplay)
+
+Earlier versions used the same names as this one: `~/x728_power_monitor/`, `x728-power-monitor.service`, `carplay-kiosk.service` and `~/carplay/`. The installer replaces them all by itself. You only need to delete the old download:
+
+```bash
+rm -rf ~/RiAct-Carplay
+```
+
+✅ **Check:** after a reboot, exactly **one** line should show:
+
+```bash
+pgrep -af x728_auto_shutdown
+```
+
+### C. Geekworm's own X728 scripts
+
+Geekworm's X728 software watches the same power pins (GPIO 6 and 26) as this program, so only one of them should run.
+
+1. **Look for it.** If any of these finds something, it's installed. ("No such file or directory" and no output mean it isn't.)
+
+   ```bash
+   grep -n x728 /etc/rc.local
+   ls /etc/x728pwr.sh /usr/local/bin/xSoft.sh
+   systemctl list-unit-files | grep -i x728
+   ```
+
+2. **Remove the start-up line.** If `/etc/rc.local` has a line with `x728` in it, open the file and delete that line:
+
+   ```bash
+   sudo nano /etc/rc.local
+   ```
+
+   Save with **Ctrl + X**, **Y**, **Enter**.
+
+3. **Turn off its services.** For every x728 service in the list **except** `x728-power-monitor.service` (that one is ours), run:
+
+   ```bash
+   sudo systemctl disable --now NAME-OF-THE-SERVICE
+   ```
+
+4. **Don't use the `x728off` command.** It runs Geekworm's script, and on the X728 V2.5 it can stop the Pi from starting by itself when power returns. This program powers the UPS off for you.
+
+### D. Start the app's settings fresh (optional)
+
+If the CarPlay app acts oddly after switching from an older version, reset its settings:
+
+```bash
+rm ~/.config/react-carplay/config.json
+```
+
+The app creates a new one with the defaults. Pick your city and night brightness again in ⚙️ Settings.
+
+### Final check
+
+```bash
+systemctl list-unit-files | grep -iE "x728|carplay"
+```
+
+✅ You should see **only** `x728-power-monitor.service` and `carplay-kiosk.service`. Then run the installer and reboot:
+
+```bash
+cd ~/react-carplay
+bash pi/install.sh
+sudo reboot
+```
+
+---
+
 ## 🖥️ Getting the Desktop Back
 
 To use the Pi as a normal computer again:
@@ -262,7 +354,9 @@ The power manager keeps working. To go back to CarPlay mode, run `bash pi/instal
 
 ---
 
-## 🔁 Updating
+## 🔁 Updating Safely
+
+### Update this program
 
 ```bash
 cd ~/react-carplay
@@ -271,7 +365,37 @@ bash pi/install.sh
 sudo reboot
 ```
 
-This downloads the newest app and reinstalls the power manager and services.
+This downloads the newest app and reinstalls the power manager and services. Your app settings (city, night brightness) are kept.
+
+### Update Raspberry Pi OS
+
+Normal updates are safe:
+
+```bash
+sudo apt update
+sudo apt full-upgrade -y
+sudo reboot
+```
+
+✅ **Check afterwards:** both lines should say `active`:
+
+```bash
+systemctl is-active x728-power-monitor carplay-kiosk
+```
+
+If the desktop or boot text came back, or either service isn't active, run `bash pi/install.sh` again and reboot.
+
+### Things that can break this program
+
+| Don't | Why |
+|-------|-----|
+| Upgrade to a newer Raspberry Pi OS (Trixie), or reflash the card with one | Its newer `gpiod` tools changed the `gpioget` / `gpioset` commands, so the UPS power-off step would stop working. Stay on **Bookworm**. |
+| Run `sudo rpi-update` | It installs test firmware that isn't needed and can break things. |
+| Run the original react-carplay `setup-pi.sh`, or download the app from Rhys Morgan's releases | It brings back the white "Searching" screens and starts a second app with the desktop. |
+| Install Geekworm's X728 scripts | They fight with this power manager over the same pins (see **🧹 Removing Old Versions**). |
+| Change **System Options → Boot / Auto Login** in `raspi-config` | It turns the desktop back on in place of the CarPlay screen. |
+
+> **Something broke after an update?** Run `bash pi/install.sh` again and reboot. It puts every part of this program back in place.
 
 ---
 

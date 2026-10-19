@@ -53,7 +53,7 @@ That's it. For step-by-step instructions with checks after each step, see the **
 
 | Document | What's in it |
 |----------|--------------|
-| [Installation Guide](docs/INSTALL_GUIDE.md) | Hardware setup, install, tests, troubleshooting, useful commands, how to get the desktop back |
+| [Installation Guide](docs/INSTALL_GUIDE.md) | Hardware setup, install, tests, troubleshooting, removing old versions, updating safely, useful commands, how to get the desktop back |
 | [How It Works](docs/HOW_IT_WORKS.md) | Plain-English walkthrough of all the code: boot, power manager, services, the CarPlay app, the build |
 | [Original react-carplay README](docs/UPSTREAM_README.md) | App features: CAN bus reverse camera, MOST bus audio, key bindings |
 
