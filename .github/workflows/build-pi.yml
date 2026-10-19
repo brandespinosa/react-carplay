@@ -1,9 +1,9 @@
-# Builds the Raspberry Pi (arm64) AppImage. Push a tag like v4.0.5-black.1 to publish it as a release.
+# Builds the Raspberry Pi (arm64) AppImage and publishes it as the latest release.
 name: Build Pi AppImage
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,7 +26,9 @@ jobs:
         with:
           name: Carplay-arm64.AppImage
           path: Carplay-arm64.AppImage
-      - if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
+          tag_name: v4.0.5-black.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
           files: Carplay-arm64.AppImage
