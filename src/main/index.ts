@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, session, systemPreferences, IpcMainEvent, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, session, systemPreferences, IpcMainEvent, ipcMain, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { DEFAULT_CONFIG } from 'node-carplay/node'
@@ -177,6 +177,8 @@ function createWindow(): void {
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
 app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required")
 app.whenReady().then(() => {
+  // Always dark, to match the black screen (menu, searching screen, settings)
+  nativeTheme.themeSource = 'dark'
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')

@@ -124,6 +124,7 @@ The app is built with **Electron**: a web page (made with **React**) running in 
 - **Settings server:** `Socket.ts` runs a small local server on port 4000. The screen uses it to read and save settings. Saving restarts the app (`saveSettings` → `app.relaunch()`).
 - **CAN bus (optional):** if enabled, `Canbus.ts` listens to the car's CAN bus (its internal network) and tells the screen when reverse is selected, to show a camera.
 - **The window:** `createWindow()` opens a full-screen, frameless window (`kiosk: true`) with a **black background** (`backgroundColor: '#000000'`), so nothing white shows while it loads.
+- **Always dark:** `nativeTheme.themeSource = 'dark'` makes the whole app use its dark look: the menu, the "Searching" screen and the settings pages. `App.css` makes the dark background pure black.
 
 ### Renderer: the screens
 
