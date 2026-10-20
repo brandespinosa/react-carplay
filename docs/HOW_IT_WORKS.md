@@ -42,6 +42,7 @@ What happens, in order, when the car is turned on:
    - `vt.global_cursor_default=0`: no blinking cursor.
    - `systemd.show_status=false`: no "[  OK  ] Started …" lines from the start-up manager (systemd).
    - `udev.log_level=3`: no hardware-detection messages.
+   - `plymouth.enable=0`: turns off Plymouth, the boot-screen program. With no splash, it prints the "[  OK  ]" lines on screen itself.
    - `fbcon=map:2`: the Pi never draws text on the screen, so no messages show at start-up or shut-down, even ones that get past the settings above. (A terminal is still available over SSH.)
    - `splash` removed: no boot animation.
 4. **No desktop.** `raspi-config nonint do_boot_behaviour B1` makes the Pi start to a text console instead of the desktop. The usual login prompt on screen 1 is turned off (`getty@tty1` disabled), so the console stays black.

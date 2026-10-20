@@ -211,7 +211,7 @@ These are the Pi's start-up and shut-down messages. The installer hides them. If
 cd ~/react-carplay && git pull && bash pi/install.sh && sudo reboot
 ```
 
-To check, run `cat /boot/firmware/cmdline.txt`. The one line should include `console=tty3`, `quiet`, `systemd.show_status=false` and `fbcon=map:2`.
+To check, run `cat /boot/firmware/cmdline.txt`. The one line should include `console=tty3`, `quiet`, `systemd.show_status=false`, `plymouth.enable=0` and `fbcon=map:2`.
 
 **No sound from CarPlay**
 
