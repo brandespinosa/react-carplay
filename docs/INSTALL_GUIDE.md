@@ -203,6 +203,16 @@ The sunset time is worked out on the Pi from the city's location and the date, s
    lsusb
    ```
 
+**Text like "[  OK  ] Started …" shows at start-up**
+
+These are the Pi's start-up messages. The installer hides them. If you still see them, update and run the installer again:
+
+```bash
+cd ~/react-carplay && git pull && bash pi/install.sh && sudo reboot
+```
+
+To check, run `cat /boot/firmware/cmdline.txt`. The one line should include `console=tty3`, `quiet` and `systemd.show_status=false`.
+
 **No sound from CarPlay**
 
 Check the Pi's audio output. Open the settings with `sudo raspi-config` → **System Options** → **Audio**, and pick the right output.
