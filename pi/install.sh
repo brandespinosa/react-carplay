@@ -31,6 +31,12 @@ echo "== 3/6 Installing the X728 power manager"
 sudo -u "$USER_NAME" mkdir -p "$HOME_DIR/x728_power_monitor"
 sudo -u "$USER_NAME" cp "$HERE/x728_auto_shutdown.py" "$HOME_DIR/x728_power_monitor/"
 install_service x728-power-monitor.service
+# The power manager runs as you and calls "sudo shutdown". Newer Pi images ask for a password,
+# so allow that one command without one (checked with visudo before it goes live)
+echo "$USER_NAME ALL=(root) NOPASSWD: /usr/sbin/shutdown" > /tmp/010_x728-shutdown
+sudo visudo -cf /tmp/010_x728-shutdown
+sudo install -m 0440 -o root -g root /tmp/010_x728-shutdown /etc/sudoers.d/010_x728-shutdown
+rm -f /tmp/010_x728-shutdown
 
 echo "== 4/6 Installing the CarPlay app"
 # Lets the app open the Carlinkit dongle (USB vendor 1314) without root
@@ -47,9 +53,10 @@ sudo cp -n "$BOOT/config.txt" "$BOOT/config.txt.bak"
 sudo cp -n "$BOOT/cmdline.txt" "$BOOT/cmdline.txt.bak"
 grep -q '^disable_splash=1' "$BOOT/config.txt" || echo 'disable_splash=1' | sudo tee -a "$BOOT/config.txt" >/dev/null
 # cmdline.txt must stay one line: send boot text to tty3, drop the splash, hide logo and cursor,
-# and stop systemd's "[  OK  ] Started ..." lines and udev messages
+# stop systemd's "[  OK  ] Started ..." lines and udev messages, turn off Plymouth (with no splash
+# it shows those lines itself), and (fbcon=map:2) never draw text on the screen. Use SSH for a terminal.
 sudo sed -i -e 's/console=tty1/console=tty3/' -e 's/ splash//' "$BOOT/cmdline.txt"
-for opt in console=tty3 quiet loglevel=3 logo.nologo vt.global_cursor_default=0 systemd.show_status=false udev.log_level=3; do
+for opt in console=tty3 quiet loglevel=3 logo.nologo vt.global_cursor_default=0 systemd.show_status=false udev.log_level=3 plymouth.enable=0 fbcon=map:2; do
   grep -qw "$opt" "$BOOT/cmdline.txt" || sudo sed -i "1 s/\$/ $opt/" "$BOOT/cmdline.txt"
 done
 sudo raspi-config nonint do_boot_behaviour B1

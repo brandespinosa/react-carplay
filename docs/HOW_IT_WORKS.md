@@ -42,6 +42,8 @@ What happens, in order, when the car is turned on:
    - `vt.global_cursor_default=0`: no blinking cursor.
    - `systemd.show_status=false`: no "[  OK  ] Started …" lines from the start-up manager (systemd).
    - `udev.log_level=3`: no hardware-detection messages.
+   - `plymouth.enable=0`: turns off Plymouth, the boot-screen program. With no splash, it prints the "[  OK  ]" lines on screen itself.
+   - `fbcon=map:2`: the Pi never draws text on the screen, so no messages show at start-up or shut-down, even ones that get past the settings above. (A terminal is still available over SSH.)
    - `splash` removed: no boot animation.
 4. **No desktop.** `raspi-config nonint do_boot_behaviour B1` makes the Pi start to a text console instead of the desktop. The usual login prompt on screen 1 is turned off (`getty@tty1` disabled), so the console stays black.
 5. **The kiosk starts.** systemd (Linux's service manager) starts `carplay-kiosk.service`:
@@ -81,7 +83,7 @@ The X728 board connects to the Pi's GPIO pins (general-purpose input/output pins
 
 1. Logs "AC Power Loss detected".
 2. Counts down `SHUTDOWN_DELAY` (5) seconds. **Every second it checks the power again.** If power is back (for example, the engine was starting), it calls `handle_power_restored()` and stops. No shutdown happens.
-3. If power is still gone after 5 seconds, it calls `perform_system_shutdown()`, which runs `sudo shutdown -h now`.
+3. If power is still gone after 5 seconds, it calls `perform_system_shutdown()`, which runs `sudo shutdown -h now`. The installer's rule in `/etc/sudoers.d/010_x728-shutdown` lets it run that one command without a password.
 
 ### The log file
 
@@ -198,6 +200,7 @@ The installer runs six steps, and is safe to run more than once:
 3. **Power manager:**
    - Copies the script to `~/x728_power_monitor/`.
    - Installs the service with your username and home folder swapped in (`install_service`).
+   - Adds `/etc/sudoers.d/010_x728-shutdown` so the power manager can run `sudo shutdown` without a password. Newer Pi images ask for one, and the shutdown would fail.
 4. **CarPlay app:**
    - Adds a udev rule (`/etc/udev/rules.d/52-nodecarplay.rules`) so the app can use the dongle (USB vendor ID `1314`) without being root.
    - Downloads the app to `~/carplay/Carplay.AppImage`.
