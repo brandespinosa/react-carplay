@@ -22,7 +22,7 @@ install_service() {
 
 echo "== 1/6 Installing packages"
 sudo apt-get update
-sudo apt-get install -y python3-smbus python3-rpi.gpio gpiod i2c-tools cage xwayland fuse libfuse2
+sudo apt-get install -y python3-smbus python3-rpi.gpio raspi-utils i2c-tools cage xwayland fuse libfuse2
 
 echo "== 2/6 Enabling I2C (the X728 board talks over I2C)"
 sudo raspi-config nonint do_i2c 0

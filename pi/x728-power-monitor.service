@@ -10,8 +10,9 @@ RestartSec=1
 # Change "pi" to your username (pi/install.sh does this for you)
 User=pi
 ExecStart=/usr/bin/python3 /home/pi/x728_power_monitor/x728_auto_shutdown.py
-# Power off the UPS only when AC is really lost (GPIO6 HIGH), not on reboot/restart
-ExecStop=/bin/sh -c '[ "$$(gpioget 0 6)" = 1 ] && gpioset 0 26=1 || true'
+# Power off the UPS only when AC is really lost (GPIO6 high), not on reboot/restart.
+# pinctrl works the same on Bookworm and Trixie (gpiod's command syntax changed in v2)
+ExecStop=/bin/sh -c 'pinctrl get 6 | grep -q "| hi" && pinctrl set 26 op dh || true'
 ExecStopPost=/bin/sleep 4
 TimeoutStopSec=10
 KillMode=mixed

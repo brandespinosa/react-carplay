@@ -105,7 +105,7 @@ class X728PowerManager:
             logging.info("UPS shutdown will be handled by systemd service ExecStop")
             
             # The systemd service will automatically call:
-            # ExecStop=/usr/bin/gpioset 0 26=1
+            # ExecStop=pinctrl set 26 op dh  (only if GPIO6 says power is lost)
             # when the system shuts down, which properly signals the UPS
             
             subprocess.run(['sudo', 'shutdown', '-h', 'now'], check=True)

@@ -15,7 +15,7 @@ This guide turns a Raspberry Pi 4 into a car head unit:
 - Raspberry Pi 4 Model B with the Geekworm X728 UPS board attached, and 18650 batteries
 - Carlinkit CPC200-CCPA (wireless) or CPC200-CCPW (wired) CarPlay dongle
 - A screen (touch screen recommended), plus a keyboard and mouse for the setup
-- A microSD card with **Raspberry Pi OS (64-bit, Bookworm)**
+- A microSD card with **Raspberry Pi OS (64-bit)**, Bookworm or Trixie
 - Internet connection
 - About 30 minutes
 
@@ -225,12 +225,12 @@ Check the Pi's audio output. Open the settings with `sudo raspi-config` → **Sy
    sudo systemctl show x728-power-monitor.service -p ExecStop
    ```
 
-   It should mention `gpioset 0 26=1`.
+   It should mention `pinctrl set 26 op dh`.
 
 2. Test the power-off signal by hand. **Warning: this turns the whole system off.**
 
    ```bash
-   gpioset 0 26=1
+   pinctrl set 26 op dh
    ```
 
 **The power manager isn't running**
@@ -420,7 +420,6 @@ If the desktop or boot text came back, or either service isn't active, run `bash
 
 | Don't | Why |
 |-------|-----|
-| Upgrade to a newer Raspberry Pi OS (Trixie), or reflash the card with one | Its newer `gpiod` tools changed the `gpioget` / `gpioset` commands, so the UPS power-off step would stop working. Stay on **Bookworm**. |
 | Run `sudo rpi-update` | It installs test firmware that isn't needed and can break things. |
 | Run the original react-carplay `setup-pi.sh`, or download the app from Rhys Morgan's releases | It brings back the white "Searching" screens and starts a second app with the desktop. |
 | Install Geekworm's X728 scripts | They fight with this power manager over the same pins (see **🧹 Removing Old Versions**). |
@@ -443,7 +442,7 @@ sudo systemctl restart carplay-kiosk.service
 journalctl -u carplay-kiosk -f
 
 # Hardware checks
-gpioget 0 6          # 0 = power OK, 1 = power lost
+pinctrl get 6        # lo = power OK, hi = power lost
 sudo i2cdetect -y 1  # X728 shows as 36
 lsusb                # the dongle shows as 1314
 ```

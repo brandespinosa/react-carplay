@@ -97,10 +97,10 @@ The Pi can't turn the X728 off while the Pi is still running its programs. The X
 - `ExecStop` runs when the service is stopped, which happens during shutdown:
 
   ```sh
-  [ "$(gpioget 0 6)" = 1 ] && gpioset 0 26=1 || true
+  pinctrl get 6 | grep -q "| hi" && pinctrl set 26 op dh || true
   ```
 
-  This means: "if GPIO 6 says the power is lost, set GPIO 26 high (turn the UPS off); otherwise do nothing". This check is why a normal `sudo reboot` with power connected does **not** turn the UPS off.
+  This means: "if GPIO 6 is high (power lost), drive GPIO 26 high (turn the UPS off); otherwise do nothing". `pinctrl` is the Raspberry Pi's own pin tool and works the same on Bookworm and Trixie (the older `gpioget` / `gpioset` commands changed between those versions). This check is why a normal `sudo reboot` with power connected does **not** turn the UPS off.
 - `ExecStopPost=/bin/sleep 4` gives the X728 time to notice the signal.
 - `Restart=always` restarts the power manager if it ever crashes.
 
@@ -193,7 +193,7 @@ You never need to build the app yourself. GitHub does it:
 
 The installer runs six steps, and is safe to run more than once:
 
-1. **Packages:** Python GPIO and I2C tools for the X728, `gpiod` (the `gpioget` / `gpioset` commands), `cage` and `xwayland` (the kiosk), and `fuse` / `libfuse2` (to run AppImages).
+1. **Packages:** Python GPIO and I2C tools for the X728, `raspi-utils` (the `pinctrl` pin tool), `cage` and `xwayland` (the kiosk), and `fuse` / `libfuse2` (to run AppImages).
 2. **I2C on:** `raspi-config nonint do_i2c 0`.
 3. **Power manager:**
    - Copies the script to `~/x728_power_monitor/`.

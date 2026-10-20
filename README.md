@@ -24,7 +24,7 @@ Everything for the project lives in this one repository:
 
 ## What you need
 
-- Raspberry Pi 4 Model B with **Raspberry Pi OS (64-bit, Bookworm)**
+- Raspberry Pi 4 Model B with **Raspberry Pi OS (64-bit)**, Bookworm or Trixie
 - Geekworm **X728** UPS board (V2.5 tested), with 18650 batteries, the **AUTO ON** and **CHG EN** jumpers fitted
 - Carlinkit **CPC200-CCPA** (wireless and wired) or **CPC200-CCPW** (wired only) CarPlay dongle
 - A screen (touch screen recommended)
