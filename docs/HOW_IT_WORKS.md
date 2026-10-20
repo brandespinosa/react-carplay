@@ -216,6 +216,7 @@ The installer runs seven steps, and is safe to run more than once:
 
 7. **Phone clock:**
    - Turns the Pi's Bluetooth on (`rfkill unblock bluetooth`).
+   - Sets `ControllerMode = le` in `/etc/bluetooth/main.conf`, so the Pi only uses Bluetooth Low Energy. It can then never connect to the phone as a car stereo and take audio away from CarPlay.
    - Copies `phone_time_sync.py` to `/usr/local/bin/` and installs `phone-time-sync.service`.
 
 Finally, it enables the three services so they start at every boot.
@@ -230,7 +231,7 @@ The script runs as root (setting the clock needs it) and talks to BlueZ, Linux's
 
 1. **Advertising.** It announces the Pi over Bluetooth LE and asks for the Apple Notification Center Service. That request is what makes iPhones list the Pi under **Settings → Bluetooth → Other Devices**.
 2. **Pairing.** The Pi has no way to show a code, so its pairing agent says yes on its own, but only while no phone is paired yet. After the first phone pairs, pairing is turned off.
-3. **Reading the time.** Each time the paired phone connects and BlueZ finishes listing its services (`ServicesResolved`), the script reads `0x2A2B`. The first bytes are the year (2 bytes, low byte first), month, day, hour, minute and second, in the phone's local time.
+3. **Reading the time.** iPhones don't reconnect to a paired accessory by themselves, so every 30 seconds the Pi tries to connect to the paired phone until it has the time. When the phone connects and BlueZ finishes listing its services (`ServicesResolved`), the script reads `0x2A2B`. The first bytes are the year (2 bytes, low byte first), month, day, hour, minute and second, in the phone's local time.
 4. **Setting the clock.** If the clock isn't already synced from the internet (`timedatectl … NTPSynchronized`), it runs `date -s` with the phone's time. Night dimming checks the clock every minute, so it follows on its own.
 
 Its log is in the system journal: `journalctl -u phone-time-sync`.

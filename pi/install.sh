@@ -89,6 +89,13 @@ fi
 
 echo "== 7/7 Phone clock (sets the time from your iPhone over Bluetooth)"
 sudo rfkill unblock bluetooth
+# Bluetooth LE only: the Pi then can't connect as a car stereo and take audio away from CarPlay
+if grep -qE '^#? *ControllerMode *=' /etc/bluetooth/main.conf; then
+  sudo sed -i -E 's/^#? *ControllerMode *=.*/ControllerMode = le/' /etc/bluetooth/main.conf
+else
+  sudo sed -i 's/^\[General\]$/[General]\nControllerMode = le/' /etc/bluetooth/main.conf
+fi
+sudo systemctl restart bluetooth
 sudo install -m 0755 "$HERE/phone_time_sync.py" /usr/local/bin/phone_time_sync.py
 install_service phone-time-sync.service
 

@@ -80,7 +80,7 @@ Enter your password if asked. It takes a few minutes and prints seven steps:
 3. If the log says `the clock is already set from the internet`, that's fine: internet time wins.
 
 **The X728 clock isn't found** in Troubleshooting.
-7. **Phone clock:** turns on the Pi's Bluetooth and installs a small service that sets the time from your iPhone when there's no internet. Pair your iPhone once (see **Pair Your iPhone for the Clock** below).
+7. **Phone clock:** turns on the Pi's Bluetooth (Low Energy only, so it never takes CarPlay's audio) and installs a small service that sets the time from your iPhone when there's no internet. Pair your iPhone once (see **Pair Your iPhone for the Clock** below).
 
 > **First install:** I2C only switches on after a reboot, so step 6 asks you to reboot and run `bash pi/install.sh` once more. That's normal.
 
@@ -199,7 +199,7 @@ Your iPhone can also set the Pi's clock over Bluetooth, the same way a smartwatc
 2. Under **Other Devices**, tap your Pi's name (for example **BrandonsPi**).
 3. Tap **Pair** if asked. If a code appears, just accept it; the Pi has no screen to show it.
 
-From then on, every time the iPhone connects to the Pi (a few seconds after you're in range), the Pi takes the phone's time, unless it already has the time from the internet. Check it with:
+From then on, after each start-up the Pi connects to your iPhone (within about a minute, once the phone is in range with Bluetooth on) and takes the phone's time, unless it already has the time from the internet. Check it with:
 
 ```bash
 journalctl -u phone-time-sync   # shows "Clock set from iPhone: …"

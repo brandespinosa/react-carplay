@@ -6,8 +6,9 @@ iPhones share their time with paired accessories through the Bluetooth LE
 "Current Time" service (0x1805, characteristic 0x2A2B). This script:
   1. advertises the Pi so it shows up in iPhone Settings > Bluetooth,
   2. accepts pairing, but only until one phone is paired,
-  3. each time the paired phone connects, reads its time and sets the clock,
-     unless the clock is already set from the internet.
+  3. connects to the paired phone (iPhones don't reconnect on their own), reads
+     its time and sets the clock, unless it's already set from the internet.
+The installer makes the Pi's Bluetooth LE-only, so it never takes the phone's audio.
 Runs as root (setting the clock needs it). Log: journalctl -u phone-time-sync
 """
 
@@ -23,6 +24,7 @@ CURRENT_TIME = '00002a2b-0000-1000-8000-00805f9b34fb'
 # Apple Notification Center Service: asking for it makes iPhones list the Pi in Settings
 ANCS = '7905f431-b5ce-4e99-a40f-4b1e122d00d0'
 PROPS = 'org.freedesktop.DBus.Properties'
+RECONNECT_EVERY = 30  # seconds between tries to reach the phone, until the time is set
 
 
 def decode_current_time(value):
@@ -94,6 +96,7 @@ class PhoneTimeSync:
         self.bus = dbus.SystemBus()
         self.agent = Agent(self.bus, self)
         self.advert = Advertisement(self.bus)
+        self.done = False  # the clock is right for this boot
 
     def objects(self):
         manager = dbus.Interface(self.bus.get_object(BUS, '/'), 'org.freedesktop.DBus.ObjectManager')
@@ -118,12 +121,25 @@ class PhoneTimeSync:
         self.bus.add_signal_receiver(self.on_change, dbus_interface=PROPS,
                                      signal_name='PropertiesChanged', path_keyword='path')
         self.read_all()
+        GLib.timeout_add_seconds(RECONNECT_EVERY, self.reconnect)
+
+    def reconnect(self):
+        if self.done:
+            return False  # stop the timer
+        for path in self.paired_devices():
+            device = self.bus.get_object(BUS, path)
+            if not device.Get('org.bluez.Device1', 'Connected', dbus_interface=PROPS):
+                device.Connect(dbus_interface='org.bluez.Device1', timeout=25,
+                               reply_handler=lambda: None, error_handler=lambda e: None)
+        return True  # try again later
 
     def on_change(self, interface, changed, invalidated, path):
         if interface == 'org.bluez.Device1' and changed.get('ServicesResolved'):
             GLib.timeout_add_seconds(1, self.read_all)
         if interface == 'org.bluez.Device1' and changed.get('Paired'):
             print(f'Paired with {path}', flush=True)
+            self.bus.get_object(BUS, path).Set('org.bluez.Device1', 'Trusted', True,
+                                               dbus_interface=PROPS)
             self.bus.get_object(BUS, ADAPTER).Set('org.bluez.Adapter1', 'Pairable', False,
                                                   dbus_interface=PROPS)
             GLib.timeout_add_seconds(1, self.read_all)
@@ -145,6 +161,7 @@ class PhoneTimeSync:
         return False  # run once when called from a GLib timer
 
     def set_clock(self, when):
+        self.done = True
         if internet_time_ok():
             print(f'iPhone time is {when}; the clock is already set from the internet', flush=True)
             return
