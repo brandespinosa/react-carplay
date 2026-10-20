@@ -121,8 +121,15 @@ class PhoneTimeSync:
         # A phone connecting (and finishing its service list) is the cue to read its time
         self.bus.add_signal_receiver(self.on_change, dbus_interface=PROPS,
                                      signal_name='PropertiesChanged', path_keyword='path')
+        # A phone removed with "bluetoothctl remove" lets a new one pair
+        self.bus.add_signal_receiver(self.update_pairable, dbus_interface='org.freedesktop.DBus.ObjectManager',
+                                     signal_name='InterfacesRemoved')
         self.read_all()
         GLib.timeout_add_seconds(RECONNECT_EVERY, self.reconnect)
+
+    def update_pairable(self, *args):
+        self.bus.get_object(BUS, ADAPTER).Set('org.bluez.Adapter1', 'Pairable', not self.paired_devices(),
+                                              dbus_interface=PROPS)
 
     def reconnect(self):
         if self.done:
