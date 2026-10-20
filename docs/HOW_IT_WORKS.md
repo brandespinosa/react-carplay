@@ -193,7 +193,7 @@ You never need to build the app yourself. GitHub does it:
 
 ## 6. The Installer (`pi/install.sh`)
 
-The installer runs six steps, and is safe to run more than once:
+The installer runs seven steps, and is safe to run more than once:
 
 1. **Packages:** Python GPIO and I2C tools for the X728, `raspi-utils` (the `pinctrl` pin tool), `cage` and `xwayland` (the kiosk), and `fuse` / `libfuse2` (to run AppImages).
 2. **I2C on:** `raspi-config nonint do_i2c 0`.
