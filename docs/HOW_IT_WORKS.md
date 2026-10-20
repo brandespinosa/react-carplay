@@ -40,6 +40,8 @@ What happens, in order, when the car is turned on:
    - `quiet loglevel=3`: only serious errors are printed.
    - `logo.nologo`: no Raspberry Pi logos.
    - `vt.global_cursor_default=0`: no blinking cursor.
+   - `systemd.show_status=false`: no "[  OK  ] Started …" lines from the start-up manager (systemd).
+   - `udev.log_level=3`: no hardware-detection messages.
    - `splash` removed: no boot animation.
 4. **No desktop.** `raspi-config nonint do_boot_behaviour B1` makes the Pi start to a text console instead of the desktop. The usual login prompt on screen 1 is turned off (`getty@tty1` disabled), so the console stays black.
 5. **The kiosk starts.** systemd (Linux's service manager) starts `carplay-kiosk.service`:
