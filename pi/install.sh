@@ -37,8 +37,10 @@ echo "== 4/6 Installing the CarPlay app"
 echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="1314", ATTR{idProduct}=="152*", MODE="0660", GROUP="plugdev"' \
   | sudo tee /etc/udev/rules.d/52-nodecarplay.rules >/dev/null
 sudo -u "$USER_NAME" mkdir -p "$HOME_DIR/carplay"
-sudo -u "$USER_NAME" curl -fL "$APP_URL" -o "$HOME_DIR/carplay/Carplay.AppImage"
-chmod +x "$HOME_DIR/carplay/Carplay.AppImage"
+# Download beside the app, then swap it in: writing over the running app fails ("Text file busy")
+sudo -u "$USER_NAME" curl -fL "$APP_URL" -o "$HOME_DIR/carplay/Carplay.AppImage.new"
+chmod +x "$HOME_DIR/carplay/Carplay.AppImage.new"
+mv -f "$HOME_DIR/carplay/Carplay.AppImage.new" "$HOME_DIR/carplay/Carplay.AppImage"
 
 echo "== 5/6 Black screen from power-on until CarPlay opens"
 sudo cp -n "$BOOT/config.txt" "$BOOT/config.txt.bak"
