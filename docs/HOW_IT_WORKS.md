@@ -193,7 +193,7 @@ You never need to build the app yourself. GitHub does it:
 
 ## 6. The Installer (`pi/install.sh`)
 
-The installer runs six steps, and is safe to run more than once:
+The installer runs seven steps, and is safe to run more than once:
 
 1. **Packages:** Python GPIO and I2C tools for the X728, `raspi-utils` (the `pinctrl` pin tool), `cage` and `xwayland` (the kiosk), and `fuse` / `libfuse2` (to run AppImages).
 2. **I2C on:** `raspi-config nonint do_i2c 0`.
@@ -214,7 +214,28 @@ The installer runs six steps, and is safe to run more than once:
    - When the clock is active and the time is synced from the internet, it saves that time to the chip (`hwclock -w`).
    - If the chip doesn't answer, it changes nothing and points to `pi/check_x728_clock.sh`. That script only reads: it checks that I2C is on, that pins GPIO 2/3 are free, scans every I2C bus for 0x36/0x68, and prints what to do.
 
-Finally, it enables both services so they start at every boot.
+7. **Phone clock:**
+   - Turns the Pi's Bluetooth on (`rfkill unblock bluetooth`).
+   - Sets `ControllerMode = le` in `/etc/bluetooth/main.conf`, so the Pi only uses Bluetooth Low Energy. It can then never connect to the phone as a car stereo and take audio away from CarPlay.
+   - Copies `phone_time_sync.py` to `/usr/local/bin/` and installs `phone-time-sync.service`.
+
+Finally, it enables the three services so they start at every boot.
+
+---
+
+## 6a. The Phone Clock (`pi/phone_time_sync.py`)
+
+iPhones share their time with paired Bluetooth accessories through the standard **Current Time** service (Bluetooth LE service `0x1805`, value `0x2A2B`). Smartwatches use it. CarPlay itself never sends the phone's time to the Pi.
+
+The script runs as root (setting the clock needs it) and talks to BlueZ, Linux's Bluetooth system, over D-Bus:
+
+1. **Advertising.** It announces the Pi over Bluetooth LE and asks for the Apple Notification Center Service. That request is what makes iPhones list the Pi under **Settings → Bluetooth → Other Devices**.
+2. **Pairing.** The Pi has no way to show a code, so its pairing agent says yes on its own, but only while no phone is paired yet. After the first phone pairs, pairing is turned off.
+3. **Staying connected.** iPhones only reconnect by themselves to accessories that use their notifications, like smartwatches. So on each connection the script subscribes to the Apple Notification Center Service (its Notification Source and Data Source). It ignores the notifications themselves. iOS asks once to allow notifications for the Pi.
+4. **Reading the time.** When the phone connects and BlueZ finishes listing its services (`ServicesResolved`), the script reads `0x2A2B`. The first bytes are the year (2 bytes, low byte first), month, day, hour, minute and second, in the phone's local time.
+5. **Setting the clock.** If the clock isn't already synced from the internet (`timedatectl … NTPSynchronized`), it runs `date -s` with the phone's time. Night dimming checks the clock every minute, so it follows on its own.
+
+Its log is in the system journal: `journalctl -u phone-time-sync`.
 
 ---
 
@@ -227,6 +248,8 @@ Finally, it enables both services so they start at every boot.
 | `pi/x728_auto_shutdown.py` | Power manager |
 | `pi/x728-power-monitor.service` | Starts the power manager; turns the UPS off at shutdown |
 | `pi/carplay-kiosk.service` | Starts the CarPlay app full screen with cage |
+| `pi/phone_time_sync.py` | Sets the clock from the paired iPhone over Bluetooth |
+| `pi/phone-time-sync.service` | Starts the phone clock at boot |
 | `src/main/index.ts` | App background: window, settings |
 | `src/main/Socket.ts` | Local settings server (port 4000) |
 | `src/main/Canbus.ts` | Car CAN bus reader (reverse camera trigger) |
