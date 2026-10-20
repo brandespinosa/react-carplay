@@ -4,6 +4,7 @@
 #   4. CarPlay app (dongle permissions + black-screen AppImage)
 #   5. black boot: no splash, no boot text, no desktop, app in the cage kiosk
 #   6. X728 clock (keeps the time for night dimming), only if the chip answers
+#   7. phone clock: sets the time from the paired iPhone over Bluetooth when there's no internet
 # Run once on the Pi:  bash pi/install.sh   (then: sudo reboot)
 set -euo pipefail
 
@@ -20,14 +21,14 @@ install_service() {
     | sudo tee "/etc/systemd/system/$1" >/dev/null
 }
 
-echo "== 1/6 Installing packages"
+echo "== 1/7 Installing packages"
 sudo apt-get update
-sudo apt-get install -y python3-smbus python3-rpi.gpio raspi-utils i2c-tools cage xwayland fuse libfuse2
+sudo apt-get install -y python3-smbus python3-rpi.gpio raspi-utils i2c-tools cage xwayland fuse libfuse2 python3-dbus python3-gi
 
-echo "== 2/6 Enabling I2C (the X728 board talks over I2C)"
+echo "== 2/7 Enabling I2C (the X728 board talks over I2C)"
 sudo raspi-config nonint do_i2c 0
 
-echo "== 3/6 Installing the X728 power manager"
+echo "== 3/7 Installing the X728 power manager"
 sudo -u "$USER_NAME" mkdir -p "$HOME_DIR/x728_power_monitor"
 sudo -u "$USER_NAME" cp "$HERE/x728_auto_shutdown.py" "$HOME_DIR/x728_power_monitor/"
 install_service x728-power-monitor.service
@@ -38,7 +39,7 @@ sudo visudo -cf /tmp/010_x728-shutdown
 sudo install -m 0440 -o root -g root /tmp/010_x728-shutdown /etc/sudoers.d/010_x728-shutdown
 rm -f /tmp/010_x728-shutdown
 
-echo "== 4/6 Installing the CarPlay app"
+echo "== 4/7 Installing the CarPlay app"
 # Lets the app open the Carlinkit dongle (USB vendor 1314) without root
 echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="1314", ATTR{idProduct}=="152*", MODE="0660", GROUP="plugdev"' \
   | sudo tee /etc/udev/rules.d/52-nodecarplay.rules >/dev/null
@@ -48,7 +49,7 @@ sudo -u "$USER_NAME" curl -fL "$APP_URL" -o "$HOME_DIR/carplay/Carplay.AppImage.
 chmod +x "$HOME_DIR/carplay/Carplay.AppImage.new"
 mv -f "$HOME_DIR/carplay/Carplay.AppImage.new" "$HOME_DIR/carplay/Carplay.AppImage"
 
-echo "== 5/6 Black screen from power-on until CarPlay opens"
+echo "== 5/7 Black screen from power-on until CarPlay opens"
 sudo cp -n "$BOOT/config.txt" "$BOOT/config.txt.bak"
 sudo cp -n "$BOOT/cmdline.txt" "$BOOT/cmdline.txt.bak"
 grep -q '^disable_splash=1' "$BOOT/config.txt" || echo 'disable_splash=1' | sudo tee -a "$BOOT/config.txt" >/dev/null
@@ -63,7 +64,7 @@ sudo raspi-config nonint do_boot_behaviour B1
 sudo systemctl disable getty@tty1.service
 install_service carplay-kiosk.service
 
-echo "== 6/6 X728 clock (keeps the right time for night dimming)"
+echo "== 6/7 X728 clock (keeps the right time for night dimming)"
 # The X728's clock is a DS1307 at I2C address 0x68 ("UU" = already in use by the driver)
 if [ ! -e /dev/i2c-1 ]; then
   echo "I2C turns on after the reboot. Reboot, then run this installer again to set up the clock."
@@ -86,7 +87,12 @@ else
   echo "         Run  bash pi/check_x728_clock.sh  to see why."
 fi
 
+echo "== 7/7 Phone clock (sets the time from your iPhone over Bluetooth)"
+sudo rfkill unblock bluetooth
+sudo install -m 0755 "$HERE/phone_time_sync.py" /usr/local/bin/phone_time_sync.py
+install_service phone-time-sync.service
+
 sudo systemctl daemon-reload
-sudo systemctl enable x728-power-monitor.service carplay-kiosk.service
+sudo systemctl enable x728-power-monitor.service carplay-kiosk.service phone-time-sync.service
 
 echo "Done. Reboot to start everything:  sudo reboot"

@@ -1,0 +1,16 @@
+[Unit]
+Description=Set the clock from the iPhone over Bluetooth
+After=bluetooth.service
+Wants=bluetooth.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/bin/python3 /usr/local/bin/phone_time_sync.py
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

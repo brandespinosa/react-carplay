@@ -19,6 +19,7 @@ Everything for the project lives in this one repository:
 | Engine starting (short power dip) | Ignored. If power is back within 5 seconds, nothing happens. |
 | Car turned off | After 5 seconds the Pi shuts down cleanly, then the X728 turns itself off to save the battery. |
 | After sunset | The screen dims to the brightness you choose (50% by default) until sunrise, once you pick your city in the app's settings. |
+| No internet in the car | The Pi takes the time from your paired iPhone over Bluetooth, so night dimming stays right. |
 | Car turned off while the Pi is still booting | The Pi shuts down 5 seconds after the power manager starts, instead of draining the battery. |
 | `sudo reboot` with power on | A normal reboot. The UPS stays on. |
 
@@ -65,6 +66,8 @@ pi/                          Raspberry Pi setup (this project)
   x728_auto_shutdown.py      Power manager for the X728 UPS
   x728-power-monitor.service Runs the power manager; powers off the UPS on shutdown
   carplay-kiosk.service      Runs the CarPlay app full screen on a black screen
+  phone_time_sync.py         Sets the clock from your iPhone over Bluetooth
+  phone-time-sync.service    Runs the phone clock at boot
   LICENSE                    MIT licence for the files in pi/
 src/                         The CarPlay app (Electron + React), from react-carplay
   main/                      Background part: window, settings file, CAN bus

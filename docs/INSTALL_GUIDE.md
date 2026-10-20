@@ -66,14 +66,21 @@ cd react-carplay
 bash pi/install.sh
 ```
 
-Enter your password if asked. It takes a few minutes and prints six steps:
+Enter your password if asked. It takes a few minutes and prints seven steps:
 
 1. **Installing packages:** the tools for the X728 board, the GPIO pins and the kiosk.
 2. **Enabling I2C:** the X728 board talks to the Pi over I2C.
 3. **Installing the X728 power manager:** copies `x728_auto_shutdown.py` to `~/x728_power_monitor/` and sets it to start at boot.
 4. **Installing the CarPlay app:** gives the app permission to use the dongle, and downloads `Carplay.AppImage` to `~/carplay/`.
 5. **Black screen:** hides the boot logo and text, turns off the desktop, and sets the CarPlay app to start full screen at boot.
-6. **X728 clock:** if the X728's clock chip answers, it turns the clock on so the Pi keeps the right time without internet (needed for night dimming). If it says the clock wasn't found, see **The X728 clock isn't found** in Troubleshooting.
+6. **X728 clock:** if the X728's clock chip answers, it turns the clock on so the Pi keeps the right time without internet (needed for night dimming). If it says the clock wasn't found, see **The iPhone doesn't set the clock**
+
+1. Check the service: `systemctl status phone-time-sync`. It should be **active (running)** and say `Advertising`.
+2. Check the phone is paired: `bluetoothctl devices Paired` should list it. If not, pair it (see **Pair Your iPhone for the Clock**).
+3. If the log says `the clock is already set from the internet`, that's fine: internet time wins.
+
+**The X728 clock isn't found** in Troubleshooting.
+7. **Phone clock:** turns on the Pi's Bluetooth and installs a small service that sets the time from your iPhone when there's no internet. Pair your iPhone once (see **Pair Your iPhone for the Clock** below).
 
 > **First install:** I2C only switches on after a reboot, so step 6 asks you to reboot and run `bash pi/install.sh` once more. That's normal.
 
@@ -183,6 +190,24 @@ The sunset time is worked out on the Pi from the city's location and the date, s
 > ```
 >
 > If the installer said the clock wasn't found, see **The X728 clock isn't found** in Troubleshooting.
+
+### Pair Your iPhone for the Clock
+
+Your iPhone can also set the Pi's clock over Bluetooth, the same way a smartwatch gets its time. This works even when the X728 clock isn't found. Do this once:
+
+1. With the Pi on, open **Settings → Bluetooth** on your iPhone.
+2. Under **Other Devices**, tap your Pi's name (for example **BrandonsPi**).
+3. Tap **Pair** if asked. If a code appears, just accept it; the Pi has no screen to show it.
+
+From then on, every time the iPhone connects to the Pi (a few seconds after you're in range), the Pi takes the phone's time, unless it already has the time from the internet. Check it with:
+
+```bash
+journalctl -u phone-time-sync   # shows "Clock set from iPhone: …"
+```
+
+> Only one phone can pair. To pair a different phone, first remove the old one: `bluetoothctl devices Paired`, then `bluetoothctl remove <the address>`.
+>
+> The phone gives its local time, so the Pi's time zone must match yours: `sudo raspi-config` → **Localisation Options** → **Timezone**.
 
 ---
 
@@ -448,6 +473,10 @@ tail -f ~/x728_power_monitor/x728_shutdown.log
 sudo systemctl status carplay-kiosk.service
 sudo systemctl restart carplay-kiosk.service
 journalctl -u carplay-kiosk -f
+
+# Phone clock
+journalctl -u phone-time-sync -f
+bluetoothctl devices Paired
 
 # Hardware checks
 pinctrl get 6        # lo = power OK, hi = power lost
