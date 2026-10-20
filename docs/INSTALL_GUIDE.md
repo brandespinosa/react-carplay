@@ -203,15 +203,15 @@ The sunset time is worked out on the Pi from the city's location and the date, s
    lsusb
    ```
 
-**Text like "[  OK  ] Started …" shows at start-up**
+**Text like "[  OK  ] Started …" shows at start-up or shut-down**
 
-These are the Pi's start-up messages. The installer hides them. If you still see them, update and run the installer again:
+These are the Pi's start-up and shut-down messages. The installer hides them. If you still see them, update and run the installer again:
 
 ```bash
 cd ~/react-carplay && git pull && bash pi/install.sh && sudo reboot
 ```
 
-To check, run `cat /boot/firmware/cmdline.txt`. The one line should include `console=tty3`, `quiet` and `systemd.show_status=false`.
+To check, run `cat /boot/firmware/cmdline.txt`. The one line should include `console=tty3`, `quiet`, `systemd.show_status=false` and `fbcon=map:2`.
 
 **No sound from CarPlay**
 
@@ -381,7 +381,7 @@ sudo reboot
 
 The power manager keeps working. To go back to CarPlay mode, run `bash pi/install.sh` again and reboot.
 
-> **Tip:** to reach a terminal without changing anything, plug in a keyboard and press **Ctrl + Alt + F2**. Log in with your username and password.
+> **Tip:** in CarPlay mode the screen never shows text, so **Ctrl + Alt + F2** shows a black screen. To reach a terminal without changing anything, connect over SSH from another computer: `ssh pi@<the Pi's address>`.
 
 ---
 

@@ -47,9 +47,10 @@ sudo cp -n "$BOOT/config.txt" "$BOOT/config.txt.bak"
 sudo cp -n "$BOOT/cmdline.txt" "$BOOT/cmdline.txt.bak"
 grep -q '^disable_splash=1' "$BOOT/config.txt" || echo 'disable_splash=1' | sudo tee -a "$BOOT/config.txt" >/dev/null
 # cmdline.txt must stay one line: send boot text to tty3, drop the splash, hide logo and cursor,
-# and stop systemd's "[  OK  ] Started ..." lines and udev messages
+# stop systemd's "[  OK  ] Started ..." lines and udev messages, and (fbcon=map:2) never draw
+# text on the screen at all, so nothing shows at start-up or shut-down. Use SSH for a terminal.
 sudo sed -i -e 's/console=tty1/console=tty3/' -e 's/ splash//' "$BOOT/cmdline.txt"
-for opt in console=tty3 quiet loglevel=3 logo.nologo vt.global_cursor_default=0 systemd.show_status=false udev.log_level=3; do
+for opt in console=tty3 quiet loglevel=3 logo.nologo vt.global_cursor_default=0 systemd.show_status=false udev.log_level=3 fbcon=map:2; do
   grep -qw "$opt" "$BOOT/cmdline.txt" || sudo sed -i "1 s/\$/ $opt/" "$BOOT/cmdline.txt"
 done
 sudo raspi-config nonint do_boot_behaviour B1
