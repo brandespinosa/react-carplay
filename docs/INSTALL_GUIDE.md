@@ -198,12 +198,15 @@ Your iPhone can also set the Pi's clock over Bluetooth, the same way a smartwatc
 1. With the Pi on, open **Settings → Bluetooth** on your iPhone.
 2. Under **Other Devices**, tap your Pi's name (for example **BrandonsPi**).
 3. Tap **Pair** if asked. If a code appears, just accept it; the Pi has no screen to show it.
+4. When the iPhone asks to **Allow Notifications** for the Pi, tap **Allow**. The Pi doesn't show them; allowing them is what makes the iPhone reconnect to the Pi by itself, like a smartwatch.
 
-From then on, after each start-up the Pi connects to your iPhone (within about a minute, once the phone is in range with Bluetooth on) and takes the phone's time, unless it already has the time from the internet. Check it with:
+From then on, the iPhone reconnects to the Pi by itself whenever both are on and in range, and the Pi takes the phone's time, unless it already has the time from the internet. Check it with:
 
 ```bash
 journalctl -u phone-time-sync   # shows "Clock set from iPhone: …"
 ```
+
+To sync right away, open **Settings → Bluetooth** on the iPhone and tap the Pi's name.
 
 > Only one phone can pair. To pair a different phone, first remove the old one: `bluetoothctl devices Paired`, then `bluetoothctl remove <the address>`.
 >
