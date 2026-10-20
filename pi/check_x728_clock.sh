@@ -16,13 +16,13 @@ echo "Overlays that can take over those pins (should be none):"
 grep -nE '^dtoverlay=(gpio-shutdown|i2c-gpio)' "$BOOT/config.txt" || echo "none"
 
 echo
-echo "== 3. Which chips answer? (36 = X728 battery chip, 68 or UU = X728 clock)"
+echo "== 3. Which chips answer on bus 1? (36 = X728 battery chip, 68 or UU = X728 clock)"
 found36=no; found68=no
-for bus in $(i2cdetect -l 2>/dev/null | awk '{print $1}' | sed 's/i2c-//'); do
-  scan="$(sudo i2cdetect -y "$bus" 2>/dev/null)"
-  echo "$scan" | grep -qE '^30:.* 36( |$)' && { found36=yes; echo "bus $bus: 36 found"; }
-  echo "$scan" | grep -qE '^60:.* (68|UU)( |$)' && { found68=yes; echo "bus $bus: 68 found"; }
-done
+# The X728 is on bus 1 (pins 3 and 5). Other buses, like the HDMI ones (20, 21), can show false hits.
+scan="$(sudo i2cdetect -y 1 2>/dev/null)"
+echo "$scan"
+echo "$scan" | grep -qE '^30:.* 36( |$)' && found36=yes
+echo "$scan" | grep -qE '^60:.* (68|UU)( |$)' && found68=yes
 echo "battery chip (36): $found36   clock (68): $found68"
 
 echo
