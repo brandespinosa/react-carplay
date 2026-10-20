@@ -99,6 +99,7 @@ class PhoneTimeSync:
         self.bus = dbus.SystemBus()
         self.agent = Agent(self.bus, self)
         self.advert = Advertisement(self.bus)
+        self.read_pending = False
 
     def objects(self):
         manager = dbus.Interface(self.bus.get_object(BUS, '/'), 'org.freedesktop.DBus.ObjectManager')
@@ -132,17 +133,20 @@ class PhoneTimeSync:
                                               dbus_interface=PROPS)
 
     def on_change(self, interface, changed, invalidated, path):
-        if interface == 'org.bluez.Device1' and changed.get('ServicesResolved'):
-            GLib.timeout_add_seconds(1, self.read_all)
-        if interface == 'org.bluez.Device1' and changed.get('Paired'):
+        if interface != 'org.bluez.Device1':
+            return
+        device = self.bus.get_object(BUS, path)
+        if changed.get('Paired') and not device.Get('org.bluez.Device1', 'Trusted', dbus_interface=PROPS):
+            # A new pairing (a restarted bluetoothd re-announces old ones, already trusted)
             print(f'Paired with {path}', flush=True)
-            self.bus.get_object(BUS, path).Set('org.bluez.Device1', 'Trusted', True,
-                                               dbus_interface=PROPS)
-            self.bus.get_object(BUS, ADAPTER).Set('org.bluez.Adapter1', 'Pairable', False,
-                                                  dbus_interface=PROPS)
+            device.Set('org.bluez.Device1', 'Trusted', True, dbus_interface=PROPS)
+            self.update_pairable()
+        if (changed.get('Paired') or changed.get('ServicesResolved')) and not self.read_pending:
+            self.read_pending = True
             GLib.timeout_add_seconds(1, self.read_all)
 
     def read_all(self):
+        self.read_pending = False
         paired = self.paired_devices()
         for path, ifaces in self.objects().items():
             char = ifaces.get('org.bluez.GattCharacteristic1')
@@ -150,7 +154,7 @@ class PhoneTimeSync:
                 continue
             if char.get('UUID') in ANCS_SOURCES and not char.get('Notifying'):
                 dbus.Interface(self.bus.get_object(BUS, path), 'org.bluez.GattCharacteristic1').StartNotify(
-                    reply_handler=lambda: print('Subscribed to iPhone notifications (keeps the phone reconnecting)', flush=True),
+                    reply_handler=lambda u=char.get('UUID'): print(f'Subscribed to iPhone notifications {u[:8]} (keeps the phone reconnecting)', flush=True),
                     error_handler=lambda e: print(f'Could not subscribe to iPhone notifications: {e}', flush=True))
             if char.get('UUID') != CURRENT_TIME:
                 continue
