@@ -217,6 +217,14 @@ To check, run `cat /boot/firmware/cmdline.txt`. The one line should include `con
 
 Check the Pi's audio output. Open the settings with `sudo raspi-config` → **System Options** → **Audio**, and pick the right output.
 
+**Power is cut, but the Pi and screen stay on**
+
+Check the power manager's log: `tail -20 ~/x728_power_monitor/x728_shutdown.log`. If it shows `Failed to shutdown system`, the Pi asked for a password. Update and run the installer again. It adds a rule that lets the power manager shut down without one:
+
+```bash
+cd ~/react-carplay && git pull && bash pi/install.sh
+```
+
 **The Pi shuts down, but the X728 stays on**
 
 1. Check the power manager service has the power-off step:

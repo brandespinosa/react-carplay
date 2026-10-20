@@ -31,6 +31,12 @@ echo "== 3/6 Installing the X728 power manager"
 sudo -u "$USER_NAME" mkdir -p "$HOME_DIR/x728_power_monitor"
 sudo -u "$USER_NAME" cp "$HERE/x728_auto_shutdown.py" "$HOME_DIR/x728_power_monitor/"
 install_service x728-power-monitor.service
+# The power manager runs as you and calls "sudo shutdown". Newer Pi images ask for a password,
+# so allow that one command without one (checked with visudo before it goes live)
+echo "$USER_NAME ALL=(root) NOPASSWD: /usr/sbin/shutdown" > /tmp/010_x728-shutdown
+sudo visudo -cf /tmp/010_x728-shutdown
+sudo install -m 0440 -o root -g root /tmp/010_x728-shutdown /etc/sudoers.d/010_x728-shutdown
+rm -f /tmp/010_x728-shutdown
 
 echo "== 4/6 Installing the CarPlay app"
 # Lets the app open the Carlinkit dongle (USB vendor 1314) without root

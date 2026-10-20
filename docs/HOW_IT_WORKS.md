@@ -83,7 +83,7 @@ The X728 board connects to the Pi's GPIO pins (general-purpose input/output pins
 
 1. Logs "AC Power Loss detected".
 2. Counts down `SHUTDOWN_DELAY` (5) seconds. **Every second it checks the power again.** If power is back (for example, the engine was starting), it calls `handle_power_restored()` and stops. No shutdown happens.
-3. If power is still gone after 5 seconds, it calls `perform_system_shutdown()`, which runs `sudo shutdown -h now`.
+3. If power is still gone after 5 seconds, it calls `perform_system_shutdown()`, which runs `sudo shutdown -h now`. The installer's rule in `/etc/sudoers.d/010_x728-shutdown` lets it run that one command without a password.
 
 ### The log file
 
@@ -200,6 +200,7 @@ The installer runs six steps, and is safe to run more than once:
 3. **Power manager:**
    - Copies the script to `~/x728_power_monitor/`.
    - Installs the service with your username and home folder swapped in (`install_service`).
+   - Adds `/etc/sudoers.d/010_x728-shutdown` so the power manager can run `sudo shutdown` without a password. Newer Pi images ask for one, and the shutdown would fail.
 4. **CarPlay app:**
    - Adds a udev rule (`/etc/udev/rules.d/52-nodecarplay.rules`) so the app can use the dongle (USB vendor ID `1314`) without being root.
    - Downloads the app to `~/carplay/Carplay.AppImage`.
