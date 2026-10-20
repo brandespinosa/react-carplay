@@ -97,6 +97,7 @@ class PhoneTimeSync:
         self.agent = Agent(self.bus, self)
         self.advert = Advertisement(self.bus)
         self.done = False  # the clock is right for this boot
+        self.connecting = set()  # phones with a connect still pending
 
     def objects(self):
         manager = dbus.Interface(self.bus.get_object(BUS, '/'), 'org.freedesktop.DBus.ObjectManager')
@@ -128,10 +129,18 @@ class PhoneTimeSync:
             return False  # stop the timer
         for path in self.paired_devices():
             device = self.bus.get_object(BUS, path)
-            if not device.Get('org.bluez.Device1', 'Connected', dbus_interface=PROPS):
-                device.Connect(dbus_interface='org.bluez.Device1', timeout=25,
-                               reply_handler=lambda: None, error_handler=lambda e: None)
+            if path in self.connecting or device.Get('org.bluez.Device1', 'Connected', dbus_interface=PROPS):
+                continue
+            self.connecting.add(path)
+            device.Connect(dbus_interface='org.bluez.Device1', timeout=25,
+                           reply_handler=lambda p=path: self.connecting.discard(p),
+                           error_handler=lambda e, p=path: self.connect_failed(p, e))
         return True  # try again later
+
+    def connect_failed(self, path, error):
+        self.connecting.discard(path)
+        if 'InProgress' not in error.get_dbus_name():
+            print(f'Could not reach the phone yet: {error.get_dbus_message() or error.get_dbus_name()}', flush=True)
 
     def on_change(self, interface, changed, invalidated, path):
         if interface == 'org.bluez.Device1' and changed.get('ServicesResolved'):
